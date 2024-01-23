@@ -1,0 +1,38 @@
+{
+    "name": "stefanmcds-mnt/epp-client",
+    "description": "Epp Client",
+    "version": "1.0",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "STEF@N MCDS S.a.s.",
+            "email": "info@stefan-mcds.it",
+            "homepage": "https://www.stefan-mcds.it"
+        }
+    ],
+    "homepage": "https://github.com/stefanmcds-mnt/epp-client",
+    "keywords": [
+        "EppClient",
+        "eppclient",
+        "epp"
+    ],
+    "require": {
+        "php": ">=8.2",
+        "algo26-matthias/idna-convert": "*",
+        "econea/nusoap": "*",
+        "stefanmcds-mnt/utilita": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "EppClient\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "EppClient\\Tests\\": "tests"
+        }
+    }
+}
