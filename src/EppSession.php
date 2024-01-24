@@ -72,7 +72,7 @@ class EppSession extends EppAbstract
     {
         if ($this->xmlquery = EppDomXML::Hello()) {
             // query server (will return false)
-            if ($this->xmlResult = $this->ExecuteQuery(clTRType: "hello", storage: true)) {
+            if ($this->ExecuteQuery(clTRType: "hello", storage: true)) {
                 $this->sessionVars = array_merge($this->sessionVars, $this->xmlResult);
                 $this->registry = EppDomXML::Registry(registry: $this->xmlResult);
                 // this is the only query with no result code
