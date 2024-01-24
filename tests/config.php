@@ -22,7 +22,7 @@ $config = [
     ],
     'include' => [
         'src' => "../src",
-        'vendor' => '../vendor/autoload.php',
+        'utilita' => '../../Utilita/src',
     ]
 ];
 // dichiarazioni delle variabili globali

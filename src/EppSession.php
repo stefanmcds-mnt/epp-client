@@ -31,17 +31,17 @@ use EppClient\EppException;
 class EppSession extends EppAbstract
 {
     // array for use to XML structure to epp server
-    private ?array $sessionVars = [
-        'clID',
-        'pw',
-        'newpw',
-        'msgID',
-        'msgIDold',
-        'credit',
-        'msgTOT',
-        'msgTitle',
-        'msgDate',
-        'type'
+    public ?array $sessionVars = [
+        'clID' => null,
+        'pw' => null,
+        'newpw' => null,
+        'msgID' => null,
+        'msgIDold' => null,
+        'credit' => null,
+        'msgTOT' => null,
+        'msgTitle' => null,
+        'msgDate' => null,
+        'type' => null
     ];
 
     /**
@@ -70,13 +70,13 @@ class EppSession extends EppAbstract
      */
     public function hello()
     {
-        if ($this->xmlQuery = EppDomXML::Hello()) {
+        if ($this->xmlquery = EppDomXML::Hello()) {
             // query server (will return false)
-            if ($this->xmlREsult = $this->ExecuteQuery(clTRType: "hello", storage: true)) {
+            if ($this->xmlResult = $this->ExecuteQuery(clTRType: "hello", storage: true)) {
                 $this->sessionVars = array_merge($this->sessionVars, $this->xmlResult);
                 $this->registry = EppDomXML::Registry(registry: $this->xmlResult);
                 // this is the only query with no result code
-                if ((substr($this->xmlResult['code'], 0, 1) == "2")) {
+                if ((substr($this->xmlResult['code'], 0, 1) === "2")) {
                     return true;
                 } else {
                     return false;
@@ -184,8 +184,11 @@ class EppSession extends EppAbstract
      * @param string message ID (default to empty)
      * @return boolean status
      */
-    public function poll(?bool $store = true, ?string $type = "req", ?string $msgID = null)
-    {
+    public function poll(
+        ?bool $store = true,
+        ?string $type = "req",
+        ?string $msgID = null
+    ) {
         switch (strtolower($type)) {
             case "req":
                 break;
@@ -202,56 +205,60 @@ class EppSession extends EppAbstract
         }
         $this->sessionVars['type'] = $type;
         $this->sessionVars['msgID'] = $msgID;
-        $this->xmlQuery = EppDomXML::Poll(['sessionvar' => $this->sessionVars, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
-        // query server
-        $qrs = $this->ExecuteQuery("poll", "poll", ($this->debug >= LOG_DEBUG));
-        // look at message counter
-        if (is_object($this->xmlResult->response->msgQ[0])) {
-            $this->sessionVars['msgTOT'] = (int) $this->xmlResult->response->msgQ->attributes()->count;
-            $this->sessionVars['msgID'] = (int) $this->xmlResult->response->msgQ->attributes()->id;
-            $this->sessionVars['msgTitle'] = (string) $this->xmlResult->response->msgQ->msg;
-            $this->sessionVars['msgDate'] = (string) $this->xmlResult->response->msgQ->qDate;
-            // parse message (only in case of a poll "req") and store it
-            if ((strtolower($type) === "req") && ($store === true)) {
-                $tmp = $this->parsePollReq();
-                $this->storage[] = [
-                    'table' => 'epp_messages',
-                    'data' => [
-                        'idmsg' => $this->sessionVars['msgID'],
-                        'title' => $this->sessionVars['msgTitle'],
-                        'type' => $tmp['type'],
-                        'domain' => (is_null($tmp['domain']) || $tmp['domain'] === '') ? null : $tmp['domain'],
-                        'data' => $tmp['data'],
-                        'clTRID' => $this->connection->_clTRID(),
-                        'svTRID' => $this->svTRID,
-                        'archivedUserID' => '1',
-                        'archived' => '0',
-                        'archivedTime' => date("Y-m-d", time()),
-                        'createdTime' => substr($this->sessionVars['msgDate'], 0, 10),
-                        'clTRID' => $this->connection->_clTRID(),
-                        'svTRID' => $this->svTRID,
-                        'title' => $this->sessionVars['msgTitle'],
-                    ],
-                    'action' => 'create'
-                ];
-                $this->storage[] = [
-                    'table' => 'epp_msgqueues',
-                    'data' => [
-                        'clTRID' => $this->connection->_clTRID(),
-                        'svTRID' => $this->svTRID,
-                        'svCode' => $this->svCode,
-                        'status' => '0',
-                        'svHTTPCode' => $this->result['code'],
-                        'svHTTPHeaders' => $this->result['headers'],
-                        'svHTTPData' => $this->result['body'],
-                    ],
-                    'action' => 'create'
-                ];
+        if ($this->xmlQuery = EppDomXML::Poll(['sessionvar' => $this->sessionVars, 'clTRID' => $this->connection->_clTRID(action: 'set')])) {
+            // query server
+            if ($this->ExecuteQuery("poll", "poll", ($this->debug >= LOG_DEBUG))) {
+                // look at message counter
+                if (isset($this->xmlResult['msgQ'])) {
+                    $this->sessionVars['msgTOT'] = (int) $this->xmlResult['msgQ']['count'];
+                    $this->sessionVars['msgID'] = (int) $this->xmlResult['msgQ']['id'];
+                    $this->sessionVars['msgTitle'] = (string) $this->xmlResult['msgQ']['msg'];
+                    $this->sessionVars['msgDate'] = (string) $this->xmlResult['msgQ']['date'];
+                    // parse message (only in case of a poll "req") and store it
+                    if ((strtolower($type) === "req") && ($store === true)) {
+                        $tmp = $this->parsePollReq();
+                        $this->storage[] = [
+                            'table' => 'epp_messages',
+                            'data' => [
+                                'idmsg' => $this->sessionVars['msgID'],
+                                'title' => $this->sessionVars['msgTitle'],
+                                'type' => $tmp['type'],
+                                'domain' => (is_null($tmp['domain']) || $tmp['domain'] === '') ? null : $tmp['domain'],
+                                'data' => $tmp['data'],
+                                'clTRID' => $this->connection->_clTRID(),
+                                'svTRID' => $this->svTRID,
+                                'archivedUserID' => '1',
+                                'archived' => '0',
+                                'archivedTime' => date("Y-m-d", time()),
+                                'createdTime' => substr($this->sessionVars['msgDate'], 0, 10),
+                                'clTRID' => $this->connection->_clTRID(),
+                                'svTRID' => $this->svTRID,
+                                'title' => $this->sessionVars['msgTitle'],
+                            ],
+                            'action' => 'create'
+                        ];
+                        $this->storage[] = [
+                            'table' => 'epp_msgqueues',
+                            'data' => [
+                                'clTRID' => $this->connection->_clTRID(),
+                                'svTRID' => $this->svTRID,
+                                'svCode' => $this->svCode,
+                                'status' => '0',
+                                'svHTTPCode' => $this->result['code'],
+                                'svHTTPHeaders' => $this->result['headers'],
+                                'svHTTPData' => $this->result['body'],
+                            ],
+                            'action' => 'create'
+                        ];
+                    }
+                } else {
+                    throw new EppException('Execute Query Poll has not been sussess!');
+                }
+            } else {
+                throw new EppException('Execute Query Poll has not been sussess!');
             }
-        } else if ($qrs === true) {
-            $this->sessionVars['msgTOT'] = 0;
         }
-        return $qrs;
+        return $this->xmlResult;
     }
 
     /**
@@ -280,278 +287,106 @@ class EppSession extends EppAbstract
      */
     protected function parsePollReq()
     {
-        $ns = $this->xmlResult->getNamespaces(true);
-
         // passwdReminder
-        if (@is_object($this->xmlResult
-            ->response
-            ->extension
-            ->children($ns['extepp'])
-            ->passwdReminder
-            ->exDate)) {
+        if (isset($this->xmlResult['passwordReminder'])) {
             return [
                 'type' => 'passwdReminder',
                 'domain' => null,
-                'data' => (string) $this->xmlResult
-                    ->response
-                    ->extension
-                    ->children($ns['extepp'])
-                    ->passwdReminder
-                    ->exDate
+                'data' => (string) $this->xmlResult['passwordReminder']
             ];
         }
 
         // creditMsgData
-        if (@is_object($this->xmlResult
-            ->response
-            ->extension
-            ->children($ns['extepp'])
-            ->creditMsgData
-            ->credit)) {
+        if (isset($this->xmlResult['creditMsgData'])) {
             return [
                 'type' => 'creditMsgData',
                 'domain' => null,
-                'data' => (string) $this->xmlResult
-                    ->response
-                    ->msgQ
-                    ->msg . " (" .
-                    (string) $this->xmlResult
-                        ->response
-                        ->extension
-                        ->children($ns['extepp'])
-                        ->creditMsgData
-                        ->credit
-                    . ")"
+                'data' => (string) $this->xmlResult['creditMsgData']
             ];
         }
 
         // delayedDebitAndRefundMsgData
-        if (@is_object($this->xmlResult
-            ->response
-            ->extension
-            ->children($ns['extepp'])
-            ->delayedDebitAndRefundMsgData
-            ->amount)) {
+        if (isset($this->xmlResult['delayedDebitAndRefundMsgData'])) {
             return [
                 'type' => 'delayedDebitAndRefundMsgData',
                 'domain' => null,
-                'data' => (string) $this->xmlResult
-                    ->response
-                    ->msgQ
-                    ->msg .
-                    " (" .
-                    (string) $this->xmlResult
-                        ->response
-                        ->extension
-                        ->children($ns['extepp'])
-                        ->delayedDebitAndRefundMsgData
-                        ->name .
-                    " / " .
-                    (string) $this->xmlResult
-                        ->response
-                        ->extension
-                        ->children($ns['extepp'])
-                        ->delayedDebitAndRefundMsgData
-                        ->amount .
-                    ")"
+                'data' => (string) $this->xmlResult['delayedDebitAndRefundMsgData']
             ];
         }
 
         // simpleMsgData
-        if (@is_object($this->xmlResult
-            ->response
-            ->extension
-            ->children($ns['extdom'])
-            ->simpleMsgData
-            ->name)) {
+        if (isset($this->xmlResult['simpleMsgData'])) {
             return [
                 'type' => 'simpleMsgData',
-                'domain' => $this->stripTrailingDots(
-                    (string) $this->xmlResult
-                        ->response
-                        ->extension
-                        ->children($ns['extdom'])
-                        ->simpleMsgData
-                        ->name
-                ),
-                'data' => (string) $this->xmlResult
-                    ->response
-                    ->msgQ->msg
+                'domain' => $this->xmlResult['simpleMsgData'],
+                'data' => (string) $this->xmlResult['msgQ']['msg']
             ];
         }
 
         // dnsErrorMsgData
-        if (@is_object($this->xmlResult
-            ->response
-            ->extension
-            ->children($ns['extdom'])
-            ->dnsErrorMsgData
-            ->report
-            ->domain)) {
+        if (isset($this->xmlResult['dnsErrorMsgData'])) {
             $msg = [];
-            foreach ($this->xmlResult
-                ->response
-                ->extension
-                ->children($ns['extdom'])
-                ->dnsErrorMsgData
-                ->report
-                ->domain
-                ->test as $child) {
-                $msg[] = $child->attributes()->name . ": " . $child->attributes()->status;
-            }
-            return [
-                'type' => 'dnsErrorMsgData',
-                'domain' => $this->stripTrailingDots(
-                    (string) $this->xmlResult
-                        ->response
-                        ->extension
-                        ->children($ns['extdom'])
-                        ->dnsErrorMsgData
-                        ->report
-                        ->domain
-                        ->attributes()
-                        ->name
-                ),
-                'data' => (string) $this->xmlResult->response->msgQ->msg . " (" . implode(", ", $msg) . ")"
-            ];
-        }
-
-        // chgStatusMsgData
-        if (@is_object($this->xmlResult
-            ->response
-            ->extension
-            ->children($ns['extdom'])
-            ->chgStatusMsgData
-            ->name)) {
-            $msg = [];
-            if (@is_object($this->xmlResult
-                ->response
-                ->extension
-                ->children($ns['extdom'])
-                ->chgStatusMsgData
-                ->targetStatus)) {
-                foreach (@$this->xmlResult
-                    ->response
-                    ->extension
-                    ->children($ns['extdom'])
-                    ->chgStatusMsgData
-                    ->targetStatus
-                    ->children($ns['domain'])
-                    ->status as $child) {
-                    $msg[] = $child->attributes()->s;
-                }
-                if (isset($ns['rgp'])) {
-                    foreach (@$this->xmlResult
-                        ->response
-                        ->extension
-                        ->children($ns['extdom'])
-                        ->chgStatusMsgData
-                        ->targetStatus
-                        ->children($ns['rgp'])
-                        ->rgpStatus as $child) {
-                        $msg[] = $child->attributes()->s;
+            foreach ($this->xmlResult['dnsErrorMsgData']['nameservers'] as $key => $value) {
+                if (is_array($value)) {
+                    foreach ($value as $k => $item) {
+                        $msg[] = "{$key}[{$k}]={$item}";
                     }
                 }
             }
             return [
+                'type' => 'dnsErrorMsgData',
+                'domain' => $this->stripTrailingDots($this->xmlResult['domain']),
+                'data' => $this->xmlResult['msgQ']['msg'] . " (" . implode(", ", $msg) . ")"
+            ];
+        }
+
+        // chgStatusMsgData
+        if (isset($this->xmlResult['chgStatusMsgData'])) {
+            return [
                 'type' => 'chgStatusMsgData',
-                'domain' => $this->stripTrailingDots(
-                    (string) $this->xmlResult
-                        ->response
-                        ->extension
-                        ->children($ns['extdom'])
-                        ->chgStatusMsgData
-                        ->name
-                ),
-                'data' => (string) $this->xmlResult->response->msgQ->msg . " (" . implode(", ", $msg) . ")"
+                'domain' => $this->stripTrailingDots($this->xmlResult['chgStatusMsgData']['name']),
+                'data' => $this->xmlResult['msgQ']['msg']
+                    . " ("
+                    . $this->xmlResult['chgStatusMsgData']['name']['targetStatus']['status']
+                    . ','
+                    . $this->xmlResult['chgStatusMsgData']['name']['targetStatus']['rgpStatus']
+                    . ")"
             ];
         }
 
         // dlgMsgData
-        if (@is_object($this->xmlResult
-            ->response
-            ->extension
-            ->children($ns['extdom'])
-            ->dlgMsgData
-            ->name)) {
-            $msg = [];
-            foreach (@$this->xmlResult
-                ->response
-                ->extension
-                ->children($ns['extdom'])
-                ->dlgMsgData
-                ->ns as $child) {
-                $msg[] = (string) $child;
+        if (isset($this->xmlResult['dlgMsgData'])) {
+            if (is_array($this->xmlResult['dlgMsgData']['ns'])) {
+                $ns = implode(',', $this->xmlResult['dlgMsgData']['ns']);
+            } else {
+                $ns = $this->xmlResult['dlgMsgData']['ns'];
             }
             return [
                 'type' => 'dlgMsgData',
-                'domain' => $this->stripTrailingDots(
-                    (string) $this->xmlResult
-                        ->response
-                        ->extension
-                        ->children($ns['extdom'])
-                        ->dlgMsgData
-                        ->name
-                ),
-                'data' => (string) $this->xmlResult->response->msgQ->msg . " (" . implode(", ", $msg) . ")"
+                'domain' => $this->xmlResult['dlgMsgData']['name'],
+                'data' => (string) $this->xmlResult['msgQ']['msg'] . " (" . $ns . ")"
             ];
         }
 
         // domain transfers
-        if (@is_object($this->xmlResult
-            ->response
-            ->resData
-            ->children($ns['domain'])
-            ->trnData
-            ->name)) {
-            $domain = (string) $this->xmlResult
-                ->response
-                ->resData
-                ->children($ns['domain'])
-                ->trnData
-                ->name;
-            $type = $this->xmlResult
-                ->response
-                ->resData
-                ->children($ns['domain'])
-                ->trnData
-                ->trStatus . "Transfer";
-            $title = (string) $this->xmlResult
-                ->response
-                ->msgQ->msg .
-                ": from " .
-                $this->xmlResult
-                ->response
-                ->resData
-                ->children($ns['domain'])
-                ->trnData
-                ->acID .
-                " (" .
-                $this->xmlResult
-                ->response
-                ->resData
-                ->children($ns['domain'])
-                ->trnData
-                ->acDate .
-                ") to " .
-                $this->xmlResult
-                ->response
-                ->resData
-                ->children($ns['domain'])
-                ->trnData->reID .
-                " (" .
-                $this->xmlResult
-                ->response
-                ->resData
-                ->children($ns['domain'])
-                ->trnData->reDate . ")";
+        if (isset($this->xmlResult['trnData'])) {
+            $title = $this->xmlResult['msgQ']['msg']
+                . ": from "
+                . $this->xmlResult['trnData']['acID']
+                . " ("
+                . $this->xmlResult['trnData']['acDate']
+                . ") to "
+                . $this->xmlResult['trnData']['reID']
+                . " ("
+                . $this->xmlResult['trnData']['reDate']
+                . ")";
             // the acID field is necessary to compare transfer-out's in case of 'serverApproved' transfers
             return [
-                'type' => $type,
-                'domain' => $this->stripTrailingDots($domain),
+                'type' => $this->xmlResult['trnData']['status'] . 'Transfer',
+                'domain' => $this->stripTrailingDots($this->xmlResult['trnData']['name']),
                 'data' => $title,
-                'acID' => $this->xmlResult->response->resData->children($ns['domain'])->trnData->acID,
-                'reID' => $this->xmlResult->response->resData->children($ns['domain'])->trnData->reID
+                'acID' => $this->xmlResult['trnData']['acID'],
+                'reID' => $this->xmlResult['trnData']['reID']
             ];
         }
 

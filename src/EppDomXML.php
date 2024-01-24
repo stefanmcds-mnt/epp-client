@@ -25,8 +25,10 @@ class EppDomXML extends EppAbstract
      *
      * @param mixed|null $registry
      */
-    public function __construct(public mixed $registry)
-    {
+    public function __construct(
+        public mixed $registry,
+        public ?string $xmlQuery
+    ) {
     }
 
     /**
@@ -59,7 +61,7 @@ class EppDomXML extends EppAbstract
                 'xsi:schemaLocation' => $item . ' ' . end($a) . '.xsd',
             ];
         }
-        return self::$registry;
+        return parent::$registry;
     }
 
     /**
@@ -73,6 +75,7 @@ class EppDomXML extends EppAbstract
         $xml = Array2XML::getXMLRoot();
         $xml->appendChild(Array2XML::convert('epp', $finalElement));
         return $xml->saveXML();
+        //return parent::$xmlQuery = $xml->saveXML();
     }
 
     /**

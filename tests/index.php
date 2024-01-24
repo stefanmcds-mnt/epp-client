@@ -13,4 +13,4 @@ $contact = $epp->goCONTACT($connection, true);
 $domain = $epp->goDOMAIN($connection, true);
 
 $session->Hello();
-print_r($session);
+print_r($session::$sessionVars);

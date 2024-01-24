@@ -402,7 +402,7 @@ class EppCurl
             curl_setopt($ch, CURLOPT_STDERR, $this->_debugFile);
         }
         $response = curl_exec($ch);
-        $this->_response['connected'] = true;
+        $this->_response['connected'] = ($response) ? true : false;
         $this->_response['status'] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $this->_response['headers'] = substr($response, 0, curl_getinfo($ch, CURLINFO_HEADER_SIZE));
         $this->_response['body'] = substr($response, curl_getinfo($ch, CURLINFO_HEADER_SIZE));
