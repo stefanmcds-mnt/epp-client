@@ -13,7 +13,7 @@
 namespace EppClient;
 
 use EppClient\EppException;
-use DOMDocument;
+use EppClient\EppDomXML;
 use Utilita\XML2Array;
 
 abstract class EppAbstract
