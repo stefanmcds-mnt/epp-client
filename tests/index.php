@@ -21,16 +21,25 @@ try {
     $session->Hello();
     $session->Login();
     //$session->Poll();
-    $domain->Check('stedns.it');
-    //$domain->Fetch('stedns.it');
+    //$domain->Check('stedns.it');
+    $domain->domainVars = array_merge($domain->domainVars, ['name' => 'stedns.it', 'authInfo' => "STE20100201-REG-001"]);
+    $domain->Fetch();
     $session->Logout();
-    print_r($domain->xmlQuery);
-    print_r($domain->xmlResult);
+    //print_r($domain->xmlQuery);
+    //print_r($domain->xmlResult);
     //print_r($session->xmlQuery);
-    //print_r($session->sessionVars);
-    print_r($domain->domainVars);
+    print_r($session->sessionVars);
+    //print_r($domain->domainVars);
     //print_r($session->xmlResponse['body']);
     //print_r($session->xmlResult);
 } catch (Exception $err) {
-    print_r($err);
+    print_r(get_class($err));
+    print_r("Message: " . $err->getMessage() . "\n");
+    print_r("Code: " . $err->getCode() . "\n");
+    print_r("Line: " . $err->getLine() . "\n");
+    if ($message == false) {
+        $message = $err->getMessage();
+    } elseif ($message != $err->getMessage()) {
+        echo "Additional message: " . $err->getMessage() . "<br /><br />";
+    }
 }

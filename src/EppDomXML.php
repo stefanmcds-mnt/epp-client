@@ -20,7 +20,7 @@ use Utilita\Array2XML;
 trait EppDomXML
 {
     // Set Registry
-    static private ?array $registro;
+    static public ?array $registro;
 
     /**
      * Initialize
@@ -28,6 +28,20 @@ trait EppDomXML
     public function __construct()
     {
         $this->registro = parent::$registry;
+        print_r("EppDomXML Registro: " . $this->registro . "\n");
+    }
+
+    /**
+     * Configure Registro
+     *
+     * @return void
+     */
+    static public function _setRegistry($registry)
+    {
+        self::$registro = $registry;
+        //print_r("EppDomXML Registro:\n");
+        //print_r(self::$registro);
+        return self::$registro;
     }
 
     /**
@@ -188,7 +202,8 @@ trait EppDomXML
                     'contact:id' => $vars['contact']
                 ]
             ];
-        } else if (isset($vars['domain'])) {
+        }
+        if (isset($vars['domain'])) {
             $finalElement['command']['check'] = [
                 'domain:check' => [
                     '@attributes' => (isset(self::$registro['domain']))
@@ -199,15 +214,13 @@ trait EppDomXML
                         ],
                 ]
             ];
-            if (is_array($vars['domains'])) {
-                foreach ($vars['domains'] as $domain) {
+            if (is_array($vars['domain'])) {
+                foreach ($vars['domain'] as $domain) {
                     $finalElement['command']['check']['domain:check']['domain:name'][] = $domain;
                 }
             } else {
-                $finalElement['command']['check']['domain:check']['domain:name'] = $vars['domains'];
+                $finalElement['command']['check']['domain:check']['domain:name'] = $vars['domain'];
             }
-        } else {
-            return false;
         }
         return self::_XML($finalElement);
     }
@@ -226,7 +239,6 @@ trait EppDomXML
             'command' => [
                 'pw' => $vars['pw'],
                 'newpw' => $vars['newpw'],
-                'clTRID' => $vars['clTRID'],
                 'options' => [
                     'version' => '1.0',
                     'lang' => 'en',
@@ -249,6 +261,7 @@ trait EppDomXML
                             ],
                     ],
                 ],
+                'clTRID' => $vars['clTRID']
             ]
         ];
         return self::_XML($finalElement);
@@ -285,7 +298,6 @@ trait EppDomXML
                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd',
             ],
             'command' => [
-                'clTRID' => $vars['clTRID'],
                 'create' => [
                     'contact:create' => [
                         '@attributes' => (isset(self::$registro['contact']))
@@ -337,6 +349,7 @@ trait EppDomXML
                         'extcon:consentForPublishing' => $vars['contact']['consentforpublishing'],
                     ],
                 ],
+                'clTRID' => $vars['clTRID']
             ],
         ];
         if ($vars['entitytype'] != 0) {
@@ -366,7 +379,6 @@ trait EppDomXML
                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd'
             ],
             'command' => [
-                'clTRID' => $vars['clTRID'],
                 'create' => [
                     'domain:create' => [
                         '@attributes' => (isset(self::$registro['domain']))
@@ -375,7 +387,7 @@ trait EppDomXML
                                 'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
                                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
                             ],
-                        'domain:name' => $vars['domain']['domain'],
+                        'domain:name' => $vars['domain']['name'],
                         'domain:period' => [
                             '@attributes' => [
                                 'unit' => 'y',
@@ -397,10 +409,11 @@ trait EppDomXML
                             $vars['domain']['admin'],
                         ],
                         'domain:authInfo' => [
-                            'domain:pw' => $vars['domain']['authinfo'],
+                            'domain:pw' => $vars['domain']['authInfo'],
                         ],
                     ],
                 ],
+                'clTRID' => $vars['clTRID']
             ],
         ];
         $finalElement['command']['create']['domain:create']['domain:contact'] = [
@@ -448,7 +461,6 @@ trait EppDomXML
                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd',
             ],
             'command' => [
-                'clTRID' => $vars['clTRID'],
                 'transfer' => [
                     '@attributes' => [
                         'op' => 'cancel'
@@ -460,12 +472,13 @@ trait EppDomXML
                                 'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
                                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
                             ],
-                        'domain:name' => $vars['domain']['domain'],
+                        'domain:name' => $vars['domain']['name'],
                         'domain:authInfo' => [
-                            'domain:pw' => $vars['domain']['authinfo'],
+                            'domain:pw' => $vars['domain']['authInfo'],
                         ]
                     ]
                 ],
+                'clTRID' => $vars['clTRID'],
             ],
         ];
         return self::_XML($finalElement);
@@ -502,7 +515,6 @@ trait EppDomXML
                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd',
             ],
             'command' => [
-                'clTRID' => $vars['clTRID'],
                 'delete' => [
                     'contact:delete' => [
                         /*
@@ -520,6 +532,7 @@ trait EppDomXML
                         'contact:id' => $vars['contact'],
                     ],
                 ],
+                'clTRID' => $vars['clTRID'],
             ],
         ];
         return $finalElement;
@@ -539,7 +552,6 @@ trait EppDomXML
                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd'
             ],
             'command' => [
-                'clTRID' => $vars['clTRID'],
                 'delete' => [
                     'domain:delete' => [
                         '@attributes' => (isset(self::$registro['domain']))
@@ -551,6 +563,7 @@ trait EppDomXML
                         'domain:name' => $vars['domain'],
                     ],
                 ],
+                'clTRID' => $vars['clTRID'],
             ],
         ];
         return $finalElement;
@@ -570,8 +583,9 @@ trait EppDomXML
                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd',
             ],
             'command' => [
-                'clTRID' => $vars['clTRID'],
                 'info' => null,
+                'extension' => null,
+                'clTRID' => $vars['clTRID'],
             ],
         ];
         if (isset($vars['contact'])) {
@@ -586,59 +600,45 @@ trait EppDomXML
                     'contact:id' => $vars['contact'],
                 ]
             ];
-        } else if (isset($vars['domain'])) {
-            if (!is_null($vars['domains']['authinfo'])) {
-                $finalElement['command']['info'] = [
-                    'domain:info' => [
-                        '@attributes' => (isset(self::$registro['domain']))
-                            ? self::$registro['domain']
-                            : [
-                                'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
-                                'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd'
-                            ],
-                        'domain:name' => [
-                            '@attribute' => [
-                                'hosts' => 'all',
-                            ],
-                            $vars['domains']['domain'],
+        }
+        if (isset($vars['domain'])) {
+            $finalElement['command']['info'] = [
+                'domain:info' => [
+                    '@attributes' => (isset(self::$registro['domain']))
+                        ? self::$registro['domain']
+                        : [
+                            'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
+                            'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd'
                         ],
-                        'domain:authInfo' => [
-                            'domain:pw' => $vars['domains']['authinfo'],
+                    'domain:name' => [
+                        '@attributes' => [
+                            'hosts' => 'all',
                         ],
+                        '@value' => $vars['domain']['name']
                     ],
+                ],
+            ];
+            if (isset($vars['domain']['authInfo'])) {
+                $finalElement['command']['info']['domain:info']['domain:authInfo'] = [
+                    'domain:pw' => $vars['domain']['authInfo'],
                 ];
-            } else {
-                $finalElement['command']['info'] = [
-                    'domain:info' => [
-                        '@attributes' => (isset(self::$registro['domain']))
-                            ? self::$registro['domain']
-                            : [
-                                'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
-                                'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd'
-                            ],
-                        'domain:name' => [
-                            '@attribute' => [
-                                'hosts' => 'all',
-                            ],
-                            $vars['domains']['domain']
-                        ],
+            }
+            if (isset($vars['infContacts'])) {
+                $finalElement['command']['extension'] = [
+                    'extdom:infContacts' => [
+                        '@attributes' => [
+                            'op' => (isset($vars['infContacts'])) ? $vars['infContacts'] : 'all',
+                            self::$registro['domain']
+                            /*
+                            (isset(self::$registro['domain']))
+                                ? self::$registro['domain']
+                                : 'xmlns:extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0',
+                            'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd'
+                            */
+                        ]
                     ],
                 ];
             }
-            $finalElement['command']['info']['extension'] = [
-                'extdom:infContacts' => [
-                    '@attributes' => [
-                        'op' => (isset($vars['infContacts'])) ? $vars['infContacts'] : 'all',
-                        /*'xmlns:extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0',
-                        'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd',*/
-                        (isset(self::$registro['domain']))
-                            ? self::$registro['domain']
-                            : ['xmlns:extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0', 'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd'],
-                    ]
-                ],
-            ];
-        } else {
-            return false;
         }
         return self::_XML($finalElement);
     }
@@ -657,7 +657,6 @@ trait EppDomXML
                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd',
             ],
             'command' => [
-                'clTRID' => $vars['clTRID'],
                 'update' => [
                     'domain:update' => [
                         '@attributes' => (isset(self::$registro['domain']))
@@ -683,6 +682,7 @@ trait EppDomXML
                         ]
                     ],
                 ],
+                'clTRID' => $vars['clTRID'],
             ],
         ];
         return self::_XML($finalElement);
@@ -703,7 +703,6 @@ trait EppDomXML
                     'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd',
                 ],
                 'command' => [
-                    'clTRID' => $vars['clTRID'],
                     'transfer' => [
                         '@attributes' => [
                             'op' => strtolower($motive),
@@ -715,11 +714,12 @@ trait EppDomXML
                                     'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
                                     'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
                                 ],
-                            'domain:name' => $vars['domain']['domain'],
+                            'domain:name' => $vars['domain']['name'],
                             'domain:authInfo' => [
-                                'domain:pw' > $vars['domain']['authinfo'],
+                                'domain:pw' > $vars['domain']['authInfo'],
                             ],
                         ],
+                        'clTRID' => $vars['clTRID'],
                     ],
                 ]
             ];
@@ -738,7 +738,7 @@ trait EppDomXML
                         'extdom:transferTrade' => [
                             'extdom:newRegistrant' => $vars['domain']['registrant'],
                             'extdom:newAuthInfo' => [
-                                'extdom:pw' => $vars['domain']['authinfo'],
+                                'extdom:pw' => $vars['domain']['authInfo'],
                             ]
                         ],
                     ],
@@ -783,7 +783,6 @@ trait EppDomXML
                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd',
             ],
             'command' => [
-                'clTRID' => $vars['clTRID'],
                 'update' => [
                     'domain:update' => [
                         '@attributes' => (isset(self::$registro['domain']))
@@ -792,13 +791,14 @@ trait EppDomXML
                                 'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
                                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
                             ],
-                        'domain:name' => $vars['domain']['domain'],
+                        'domain:name' => $vars['domain']['name'],
                         'domain:chg' => [
                             'domain:authInfo' => [
-                                'domain:pw' => $vars['domain']['authinfo'],
+                                'domain:pw' => $vars['domain']['authInfo'],
                             ],
                         ],
                     ],
+                    'clTRID' => $vars['clTRID'],
                 ],
             ],
         ];
@@ -877,7 +877,6 @@ trait EppDomXML
                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd',
             ],
             'command' => [
-                'clTRID' => $vars['clTRID'],
                 'update' => [
                     'contact:update' => [
                         [
@@ -912,6 +911,7 @@ trait EppDomXML
                             'extcon:consentForPublishing' => $vars['contact']['consentforpublishing'],
                         ],
                     ],
+                    'clTRID' => $vars['clTRID'],
                 ],
             ],
         ];

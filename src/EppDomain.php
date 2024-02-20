@@ -41,23 +41,23 @@ class EppDomain extends EppAbstract
     private mixed $techinitial;
     private mixed $nsinitial;
     // array for use to XML structure to epp server
-    private ?array $domainVars = [
-        'roid',
-        'name',
-        'ns',
-        'host',
-        'registrant',
-        'contact',
-        'authInfo',
-        'crDate',
-        'exDate',
-        'status',
-        'ceID',
-        'oldauthinfo',
-        'infContacts',
-        'upID',
-        'upDate',
-        'trnData',
+    public ?array $domainVars = [
+        'roid' => null,
+        'name' => null,
+        'ns' => null,
+        'host' => null,
+        'registrant' => null,
+        'contact' => null,
+        'authInfo' => null,
+        'crDate' => null,
+        'exDate' => null,
+        'status' => null,
+        'ceID' => null,
+        'oldauthinfo' => null,
+        'infContacts' => null,
+        'upID' => null,
+        'upDate' => null,
+        'trnData' => null,
     ];
 
     // use just in case of an updateRegistrant + change of agent
@@ -83,21 +83,21 @@ class EppDomain extends EppAbstract
     /**
      * check domain
      *
-     * @param    mixed $domains  optional domain to check (set domain!)
+     * @param    mixed $domain  optional domain to check (set domain!)
      * @return   mixed|boolean   array([name] => esempio1.it, [avail] => false, [reason] => Domain is registered) or boolean -1 error
      */
-    public function Check(mixed $domains = null)
+    public function Check(mixed $domain = null)
     {
-        if ($domains === null) {
-            $domains = $this->domainVars['name'];
-        } else if ($domains === "") {
+        if ($domain === null) {
+            $domain = $this->domainVars['name'];
+        } else if ($domain === "") {
             $this->setError("Operation not allowed, set a domain name first!");
             return -2;
         }
         // fetch xml template
-        $this->xmlQuery = EppDomXML::_Check(vars: ['domains' => $domains, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
+        $this->xmlQuery = EppDomXML::_Check(vars: ['domain' => $domain, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server
-        if ($this->ExecuteQuery(clTRType: "check-domain", clTRObject: $domains, storage: true)) {
+        if ($this->ExecuteQuery(clTRType: "check-domain", clTRObject: $domain, storage: true)) {
             return $this->domainVars = array_merge($this->domainVars, $this->xmlResult);
         } else {
             // distinguish between errors and boolean states...
@@ -137,30 +137,24 @@ class EppDomain extends EppAbstract
      */
     public function Fetch(?string $domain = null, ?string $authinfo = null, ?string $infContacts = 'all')
     {
-        if ($domain === null) {
-            $domain = $this->domainVars['name'];
-        } else if ($domain == "") {
-            $this->setError("Operation not allowed, set a domain name first!");
-            return -2;
-        }
         $infContacts = strtolower($infContacts);
         if (!in_array($infContacts, ["all", "registrant", "admin", "tech"])) {
-            $infContacts = '';
+            $infContacts = 'all';
         }
-        // if authinfo was not given as an argument, but has been set
-        $authinfo = ($authinfo === null) ? ((isset($this->domainVars['authInfo'])) ?  isset($this->domainVars['authInfo']) : null) : null;
-        $domains = [
-            'name' => $domain,
-            'authInfo' => $authinfo
+        // if domain and authinfo was not given as an argument, but has been set
+        $domain = [
+            'name' => ($domain === null) ? $this->domainVars['name'] : $domain,
+            'authInfo' => ($authinfo === null) ? $this->domainVars['authInfo'] : $authinfo,
         ];
-        $this->xmlQuery = EppDomXML::_Info(vars: ['domains' => $domains, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
+        $this->xmlQuery = EppDomXML::_Info(vars: ['domain' => $domain, 'infContacts' => $infContacts, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server
         if ($this->ExecuteQuery(clTRType: "info-domain", clTRObject: $domain, storage: true)) {
             // reset changes at the bottom
+            $this->domainVars = array_merge($this->domainVars, $this->xmlResult);
             $this->nsinitial = $this->domainVars['ns'];
             $this->admininitial = $this->domainVars['contact']['admin'];
             $this->techinitial = $this->domainVars['contact']['tech'];
-            return $this->domainVars = array_merge($this->domainVars, $this->xmlResult);
+            return $this->domainVars;
         } else {
             return false;
         }

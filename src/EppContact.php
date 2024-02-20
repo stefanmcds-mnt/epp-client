@@ -29,7 +29,7 @@ use EppClient\EppConnection;
 class EppContact extends EppAbstract
 {
     // array for use to XML structure to epp server
-    private array $contactVars = [
+    public ?array $contactVars = [
         'id',
         'name',
         'org',

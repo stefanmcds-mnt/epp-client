@@ -215,7 +215,7 @@ abstract class EppAbstract
      * @param array|null $registry
      * @return mixed
      */
-    public function Registry(?array $registry = [])
+    public function setRegistry(?array $registry = [])
     {
 
         //$this->registry = (null !== $registry) ? array_merge($this->registry, $registry) : $this->registry;
@@ -276,7 +276,7 @@ abstract class EppAbstract
                 $ext = ['extepp', 'extdom', 'extcon'];
             }
         }
-        print_r($element . "\n" . $xml);
+        //print_r($element . "\n" . $xml);
         // parse into array Epp XML response
         if ($res = XML2Array::createArray($xml)) {
             // set the object properties with the values from the xml response
@@ -599,7 +599,7 @@ abstract class EppAbstract
                                     );
                                     unset($p['tech'][$z]['contact:addr']);
                                     unset($p['tech'][$z]['contact:postalInfo']);
-                                    unset($p['tech'][$z]['extcon:registrant']);
+                                    //unset($p['tech'][$z]['extcon:registrant']);
                                     $p['tech'][$z] = $this->tree($p['tech'][$z]);
                                     $z++;
                                 } else if ($item['@attributes']['type'] === 'admin') {
@@ -623,11 +623,11 @@ abstract class EppAbstract
                                         $p['admin'],
                                         $p['admin']['contact:postalInfo'],
                                         $p['admin']['contact:postalInfo']['contact:addr'],
-                                        $p['admin']['extcon:registrant']
+                                        //$p['admin']['extcon:registrant']
                                     );
                                     unset($p['admin']['contact:addr']);
                                     unset($p['admin']['contact:postalInfo']);
-                                    unset($p['admin']['extcon:registrant']);
+                                    //unset($p['admin']['extcon:registrant']);
                                     $p['admin'] = $this->tree($p['admin']);
                                 }
                             }
@@ -703,7 +703,7 @@ abstract class EppAbstract
     public function set(?string $var, mixed $val)
     {
         $class = explode('\\', get_class($this));
-        $class = strtolower(str_replace(['EPP', 'CLASS'], '', strtoupper(end($class))));
+        $class = strtolower(str_replace(['EPP', 'CLASS', 'epp', 'class'], '', strtoupper(end($class))));
         $classVars = $class . 'Vars';
         // in version 5.2.3 the 4th parameter "double_encode" was added
         if (null !== $val) {
@@ -720,6 +720,7 @@ abstract class EppAbstract
         } else {
             $this->$classVars[$var] = $val;
         }
+        print_r($this->$classVars[$var]);
     }
 
     /**
@@ -857,7 +858,7 @@ abstract class EppAbstract
                     }
                     // look for an extended server error message and code
                     if (isset($this->xmlResult['result']['wrongValue'])) {
-                        $this->wrongValue = implode(' ', array_values($this->xmlResult['result']['wrongValue']));
+                        //$this->wrongValue = implode(' ', array_values($this->xmlResult['result']['wrongValue']));
                     }
                 } else {
                     throw new EppException(message: "Unexpected result (no xml response code).");
