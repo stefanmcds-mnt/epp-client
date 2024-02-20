@@ -65,7 +65,7 @@ class EppDomain extends EppAbstract
     private ?string $idn;
     private ?string $domain;
     private mixed $tech;
-    private ?string $status;
+    private mixed $status;
 
     /*
      * Class constructor
@@ -90,9 +90,7 @@ class EppDomain extends EppAbstract
     {
         if ($domains === null) {
             $domains = $this->domainVars['name'];
-        } else if (!is_array($domains)) {
-            $domains = [$domains];
-        } else if ($domains == "") {
+        } else if ($domains === "") {
             $this->setError("Operation not allowed, set a domain name first!");
             return -2;
         }
@@ -100,8 +98,7 @@ class EppDomain extends EppAbstract
         $this->xmlQuery = EppDomXML::_Check(vars: ['domains' => $domains, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server
         if ($this->ExecuteQuery(clTRType: "check-domain", clTRObject: $domains, storage: true)) {
-            $this->domainVars = array_merge($this->domainVars, $this->xmlResult);
-            return $this->domainVars;
+            return $this->domainVars = array_merge($this->domainVars, $this->xmlResult);
         } else {
             // distinguish between errors and boolean states...
             return -1;
@@ -151,9 +148,7 @@ class EppDomain extends EppAbstract
             $infContacts = '';
         }
         // if authinfo was not given as an argument, but has been set
-        if (($authinfo === null)) {
-            $authinfo = $this->domainVars['authInfo'];
-        }
+        $authinfo = ($authinfo === null) ? ((isset($this->domainVars['authInfo'])) ?  isset($this->domainVars['authInfo']) : null) : null;
         $domains = [
             'name' => $domain,
             'authInfo' => $authinfo

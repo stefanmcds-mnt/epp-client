@@ -17,15 +17,20 @@ $session = Epp::goSESSION($connection, true);
 $contact = Epp::goCONTACT($connection, true);
 $domain = Epp::goDOMAIN($connection, true);
 
-$session->Hello();
-$session->Login();
-$session->Poll();
-//$domain->Check('stedns.it');
-$session->Logout();
-
-print_r($domain->xmlQuery);
-print_r($domain->xmlResult);
-print_r($session->xmlQuery);
-print_r($session->sessionVars);
-//print_r($session->xmlResponse['body']);
-//print_r($session->xmlResult);
+try {
+    $session->Hello();
+    $session->Login();
+    //$session->Poll();
+    $domain->Check('stedns.it');
+    //$domain->Fetch('stedns.it');
+    $session->Logout();
+    print_r($domain->xmlQuery);
+    print_r($domain->xmlResult);
+    //print_r($session->xmlQuery);
+    //print_r($session->sessionVars);
+    print_r($domain->domainVars);
+    //print_r($session->xmlResponse['body']);
+    //print_r($session->xmlResult);
+} catch (Exception $err) {
+    print_r($err);
+}

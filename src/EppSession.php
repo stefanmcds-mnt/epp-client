@@ -101,6 +101,7 @@ class EppSession extends EppAbstract
         if (isset($this->xmlResult['creditMsgData'])) {
             $this->sessionVars['credit'] = $this->xmlResult['creditMsgData'];
         }
+        $this->sessionVars = array_merge($this->sessionVars, $this->xmlResult);
         return true;
         //} else {
         //    $this->logout();
@@ -159,6 +160,7 @@ class EppSession extends EppAbstract
     public function PollID()
     {
         $this->Poll(false, 'req', null);
+        $this->sessionVars = array_merge($this->sessionVars, $this->xmlResult);
         return (int) $this->sessionVars['msgID'];
     }
 
@@ -172,6 +174,7 @@ class EppSession extends EppAbstract
     public function PollMessageCount()
     {
         $this->Poll(false, 'req', null);
+        $this->sessionVars = array_merge($this->sessionVars, $this->xmlResult);
         return (int) $this->sessionVars['msgTOT'];
     }
 
@@ -208,7 +211,6 @@ class EppSession extends EppAbstract
             // query server
             if ($this->ExecuteQuery(clTRType: "poll", clTRObject: "poll", storage: true)) {
                 // look at message counter
-                print_r($this->xmlResponse);
                 if (isset($this->xmlResult['msgQ'])) {
                     $this->sessionVars['msgTOT'] = (int) $this->xmlResult['msgQ']['count'];
                     $this->sessionVars['msgID'] = (int) $this->xmlResult['msgQ']['id'];
@@ -251,13 +253,14 @@ class EppSession extends EppAbstract
                             'action' => 'create'
                         ];
                     }
-                } else {
-                    //throw new EppException('Execute Query Poll has not Message!');
                 }
             } else {
                 throw new EppException('Execute Query Poll has not been sussess!');
             }
+        } else {
+            throw new EppException('Can not construct xmlQuery!');
         }
+        $this->sessionVars = array_merge($this->sessionVars, $this->xmlResult);
         return $this->xmlResult;
     }
 

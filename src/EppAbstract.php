@@ -276,6 +276,7 @@ abstract class EppAbstract
                 $ext = ['extepp', 'extdom', 'extcon'];
             }
         }
+        print_r($element . "\n" . $xml);
         // parse into array Epp XML response
         if ($res = XML2Array::createArray($xml)) {
             // set the object properties with the values from the xml response
