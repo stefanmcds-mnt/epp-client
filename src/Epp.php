@@ -9,7 +9,7 @@
  * 
  *
  * @category IT EPP Client
- * @package EPPAbstract
+ * @package Epp
  * @author STEF@N MCDS S.a.s. <info@stefan-mcds.it>
  * @license http://opensource.org/licenses/bsd-license.php New BSD License
  *
