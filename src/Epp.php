@@ -67,8 +67,8 @@ class Epp
      * @param mixed|null $config
      */
     public function __construct(
-        protected mixed $config = null,
-        protected ?object $connection = null
+        protected mixed $config,
+        protected EppConnection $connection
     ) {
     }
 
@@ -94,7 +94,7 @@ class Epp
      * @return object $session istance
      */
     public static function goSESSION(
-        ?EppConnection $connection,
+        $connection,
         ?bool $tostore = true
     ) {
         $session = new EppSession(connection: $connection, tostore: $tostore);
@@ -111,7 +111,7 @@ class Epp
      * @return object $contact istance
      */
     public static function goCONTACT(
-        ?EppConnection $connection,
+        $connection,
         ?bool $tostore = true
     ) {
         $contact = new EppContact(connection: $connection, tostore: $tostore);
@@ -128,7 +128,7 @@ class Epp
      * @return object $domain istance
      */
     public static function goDOMAIN(
-        ?EppConnection $connection,
+        $connection,
         ?bool $tostore = true
     ) {
         $domain = new EppDomain(connection: $connection, tostore: $tostore);
