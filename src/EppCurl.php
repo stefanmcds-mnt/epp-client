@@ -402,11 +402,13 @@ class EppCurl
             curl_setopt($ch, CURLOPT_STDERR, $this->_debugFile);
         }
         $response = curl_exec($ch);
+        /*
         $this->_response['connected'] = ($response) ? true : false;
         $this->_response['status'] = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $this->_response['headers'] = substr($response, 0, curl_getinfo($ch, CURLINFO_HEADER_SIZE));
         $this->_response['body'] = substr($response, curl_getinfo($ch, CURLINFO_HEADER_SIZE));
         $this->_response['error'] = ($response === false) ? curl_error($ch) : "";
+        */
         curl_close($ch);
         // write debug information
         if ($this->_debugFile) {
@@ -419,6 +421,13 @@ class EppCurl
                 "==== END INPUT ====\n\n";
             $this->writeLog(text: $log, action: 'EppCurl');
         }
-        return $this->_response;
+        //return $this->_response;
+        return [
+            'connected' => ($response) ? true : false,
+            'status' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
+            'headers' => substr($response, 0, curl_getinfo($ch, CURLINFO_HEADER_SIZE)),
+            'body' => substr($response, curl_getinfo($ch, CURLINFO_HEADER_SIZE)),
+            'error' => ($response === false) ? curl_error($ch) : "",
+        ];
     }
 }

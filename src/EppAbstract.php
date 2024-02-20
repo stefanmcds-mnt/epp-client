@@ -18,12 +18,14 @@ use Utilita\XML2Array;
 
 abstract class EppAbstract
 {
+    use EppDomXML;
+
     /**
      * Log Level
      *
      * @var array|null
      */
-    public ?array $LogDebug = [
+    public array $LogDebug = [
         'LOG_EMERG' => 0, /* system is unusable */
         'LOG_ALERT' => 1, /* action must be taken immediately */
         'LOG_CRIT' => 2, /* critical conditions */
@@ -79,18 +81,11 @@ abstract class EppAbstract
     public ?array $storage = null;
 
     /**
-     * EppDomXML
-     *
-     * @var EppDomXML|null
-     */
-    public ?EppDomXML $dom; /* DOMDocument */
-
-    /**
      * Called Class
      *
      * @var string|null
      */
-    public ?string $class; /* string report the called class */
+    public ?string $class = null; /* string report the called class */
 
     /**
      * Default debug level
@@ -113,8 +108,7 @@ abstract class EppAbstract
      * @var string|null
      */
     public ?string $svTRID = null;
-    public mixed $registry = null;
-    public mixed $EPPcfg = null;
+    public ?array $registry = [];
 
     /**
      * XML Vars returned by $thic->connection
@@ -216,6 +210,43 @@ abstract class EppAbstract
     }
 
     /**
+     * Set Registry
+     *
+     * @param array|null $registry
+     * @return mixed
+     */
+    public function Registry(?array $registry = [])
+    {
+
+        //$this->registry = (null !== $registry) ? array_merge($this->registry, $registry) : $this->registry;
+        $this->registry = $registry;
+        foreach ($this->registry['objURI'] as $item) {
+            $a = explode(':', $item);
+            $b = explode('-', end($a));
+            $this->registry[reset($b)] = [
+                'xmlns:' . reset($b) => $item,
+                'xsi:schemaLocation' => $item . ' ' . end($a) . '.xsd',
+            ];
+        }
+        foreach ($this->registry['extURI'] as $item) {
+            if (stristr($item, 'http')) {
+                $a = explode('/', $item);
+            }
+            if (stristr($item, ':')) {
+                $a = explode(':', $item);
+            }
+            $b = explode('-', end($a));
+            $this->registry[reset($b)] = [
+                'xmlns:' . reset($b) => $item,
+                'xsi:schemaLocation' => $item . ' ' . end($a) . '.xsd',
+            ];
+        }
+        unset($this->registry['greeting']);
+        return $this->registry;
+    }
+
+
+    /**
      * Parse $this->xmlQuery result
      * 
      * XML2Array class transform DOMXML Object into an array
@@ -226,7 +257,7 @@ abstract class EppAbstract
      * @param string|null $element needed for dns check
      * @return array
      */
-    public function ParseResponseBody(?string $xml, ?string $element = null)
+    private function ParseResponseBody(?string $xml, ?string $element = null)
     {
         if ($element === 'dns') {
             $ext = 'extdom';
@@ -283,6 +314,7 @@ abstract class EppAbstract
             if (isset($res['greeting'])) {
                 unset($res['greeting']['dcp']);
                 $res = array_merge($res, $res['greeting'], $res['greeting']['svcMenu'], $res['greeting']['svcMenu']['svcExtension']);
+                unset($res['greeting']);
                 unset($res['svcMenu']);
                 unset($res['svcExtension']);
             }
@@ -496,137 +528,138 @@ abstract class EppAbstract
                             unset($res['extension'][$e . ':dlgMsgData']);
                         }
                     }
-                }
-                // trade on transfer Command on domain
-                if (isset($res['extension'][$ext . ':trade'])) {
-                    $res['trnData']['newRegistrant'] = $res['extension'][$ext . ':trade'][$ext . ':transferTrade'][$ext . ':newRegistrant'];
-                    if (isset($res['extension'][$ext . ':trade'][$ext . ':transferTrade'][$ext . ':newAuthInfo'])) {
-                        $res['trnData']['newAuthInfo'] = $res['extension'][$ext . ':trade'][$ext . ':transferTrade'][$ext . ':newAuthInfo'][$ext . ':pw'];
-                    }
-                    unset($res['extension'][$ext . ':trade']);
-                }
-                // infContactsData on Domain Command with infContactsData
-                if (isset($res['extension'][$ext . ':infContactsData'])) {
-                    $p = null;
-                    // Registrant
-                    if ($res['extension'][$ext . ':infContactsData'][$ext . ':registrant']) {
-                        $p['registrant'] = array_merge(
-                            $res['extension'][$ext . ':infContactsData'][$ext . ':registrant'][$ext . ':infContact'],
-                            $res['extension'][$ext . ':infContactsData'][$ext . ':registrant'][$ext . ':extInfo']
-                        );
-                        $a = null;
-                        foreach ($p['registrant']['contact:status'] as $item) {
-                            $a[] = $item['@attributes']['s'];
+                } else {
+                    // trade on transfer Command on domain
+                    if (isset($res['extension'][$ext . ':trade'])) {
+                        $res['trnData']['newRegistrant'] = $res['extension'][$ext . ':trade'][$ext . ':transferTrade'][$ext . ':newRegistrant'];
+                        if (isset($res['extension'][$ext . ':trade'][$ext . ':transferTrade'][$ext . ':newAuthInfo'])) {
+                            $res['trnData']['newAuthInfo'] = $res['extension'][$ext . ':trade'][$ext . ':transferTrade'][$ext . ':newAuthInfo'][$ext . ':pw'];
                         }
-                        $p['registrant']['contact:status'] = implode('/', $a);
-                        $p['registrant']['contact:voice'] = (null !== $p['registrant']['contact:voice']['@attributes']['x'])
-                            ? $p['registrant']['contact:voice']['@value'] . ' int. ' . $p['registrant']['contact:voice']['@attributes']['x']
-                            : $p['registrant']['contact:voice']['@value'];
-                        $p['registrant']['contact:fax'] =  (null !== $p['registrant']['contact:fax']['@attributes']['x'])
-                            ? $p['registrant']['contact:fax']['@value'] . ' int. ' . $p['registrant']['contact:fax']['@attributes']['x']
-                            : $p['registrant']['contact:fax']['@value'];
-                        unset($p['registrant']['contact:postalInfo']['@attributes']);
-                        $p['registrant'] = array_merge(
-                            $p['registrant'],
-                            $p['registrant']['contact:postalInfo'],
-                            $p['registrant']['contact:postalInfo']['contact:addr'],
-                            $p['registrant']['extcon:registrant']
-                        );
-                        unset($p['registrant']['contact:addr']);
-                        unset($p['registrant']['contact:postalInfo']);
-                        unset($p['registrant']['extcon:registrant']);
-                        $p['registrant'] = $this->tree($p['registrant']);
+                        unset($res['extension'][$ext . ':trade']);
                     }
-                    // Admin anch Tech
-                    if ($res['extension'][$ext . ':infContactsData'][$ext . ':contact']) {
-                        $z = 0;
-                        foreach ($res['extension'][$ext . ':infContactsData'][$ext . ':contact'] as $key => $item) {
-                            if ($item['@attributes']['type'] === 'tech') {
-                                $p['tech'][] = array_merge(
-                                    $item[$ext . ':infContact'],
-                                    $item[$ext . ':extInfo']
-                                );
-                                $a = null;
-                                foreach ($p['tech'][$z]['contact:status'] as $aa) {
-                                    $a[] = $aa['@attributes']['s'];
+                    // infContactsData on Domain Command with infContactsData
+                    if (isset($res['extension'][$ext . ':infContactsData'])) {
+                        $p = null;
+                        // Registrant
+                        if ($res['extension'][$ext . ':infContactsData'][$ext . ':registrant']) {
+                            $p['registrant'] = array_merge(
+                                $res['extension'][$ext . ':infContactsData'][$ext . ':registrant'][$ext . ':infContact'],
+                                $res['extension'][$ext . ':infContactsData'][$ext . ':registrant'][$ext . ':extInfo']
+                            );
+                            $a = null;
+                            foreach ($p['registrant']['contact:status'] as $item) {
+                                $a[] = $item['@attributes']['s'];
+                            }
+                            $p['registrant']['contact:status'] = implode('/', $a);
+                            $p['registrant']['contact:voice'] = (null !== $p['registrant']['contact:voice']['@attributes']['x'])
+                                ? $p['registrant']['contact:voice']['@value'] . ' int. ' . $p['registrant']['contact:voice']['@attributes']['x']
+                                : $p['registrant']['contact:voice']['@value'];
+                            $p['registrant']['contact:fax'] =  (null !== $p['registrant']['contact:fax']['@attributes']['x'])
+                                ? $p['registrant']['contact:fax']['@value'] . ' int. ' . $p['registrant']['contact:fax']['@attributes']['x']
+                                : $p['registrant']['contact:fax']['@value'];
+                            unset($p['registrant']['contact:postalInfo']['@attributes']);
+                            $p['registrant'] = array_merge(
+                                $p['registrant'],
+                                $p['registrant']['contact:postalInfo'],
+                                $p['registrant']['contact:postalInfo']['contact:addr'],
+                                $p['registrant']['extcon:registrant']
+                            );
+                            unset($p['registrant']['contact:addr']);
+                            unset($p['registrant']['contact:postalInfo']);
+                            unset($p['registrant']['extcon:registrant']);
+                            $p['registrant'] = $this->tree($p['registrant']);
+                        }
+                        // Admin anch Tech
+                        if ($res['extension'][$ext . ':infContactsData'][$ext . ':contact']) {
+                            $z = 0;
+                            foreach ($res['extension'][$ext . ':infContactsData'][$ext . ':contact'] as $key => $item) {
+                                if ($item['@attributes']['type'] === 'tech') {
+                                    $p['tech'][] = array_merge(
+                                        $item[$ext . ':infContact'],
+                                        $item[$ext . ':extInfo']
+                                    );
+                                    $a = null;
+                                    foreach ($p['tech'][$z]['contact:status'] as $aa) {
+                                        $a[] = $aa['@attributes']['s'];
+                                    }
+                                    $p['tech'][$z]['contact:status'] = implode('/', $a);
+                                    $p['tech'][$z]['contact:voice'] = (null !== $p['tech'][$z]['contact:voice']['@attributes']['x'])
+                                        ? $p['tech'][$z]['contact:voice']['@value'] . ' int. ' . $p['tech'][$z]['contact:voice']['@attributes']['x']
+                                        : $p['tech'][$z]['contact:voice']['@value'];
+                                    $p['tech'][$z]['contact:fax'] = (null !== $p['tech'][$z]['contact:fax']['@attributes']['x'])
+                                        ? $p['tech'][$z]['contact:fax']['@value'] . ' int. ' . $p['tech'][$z]['contact:fax']['@attributes']['x']
+                                        : $p['tech'][$z]['contact:fax']['@value'];
+                                    unset($p['tech'][$z]['contact:postalInfo']['@attributes']);
+                                    $p['tech'][$z] = array_merge(
+                                        $p['tech'][$z],
+                                        $p['tech'][$z]['contact:postalInfo'],
+                                        $p['tech'][$z]['contact:postalInfo']['contact:addr'],
+                                        //$p['tech'][$z]['extcon:registrant']
+                                    );
+                                    unset($p['tech'][$z]['contact:addr']);
+                                    unset($p['tech'][$z]['contact:postalInfo']);
+                                    unset($p['tech'][$z]['extcon:registrant']);
+                                    $p['tech'][$z] = $this->tree($p['tech'][$z]);
+                                    $z++;
+                                } else if ($item['@attributes']['type'] === 'admin') {
+                                    $p['admin'] = array_merge(
+                                        $item[$ext . ':infContact'],
+                                        $item[$ext . ':extInfo']
+                                    );
+                                    $a = null;
+                                    foreach ($p['admin']['contact:status'] as $aa) {
+                                        $a[] = $aa['@attributes']['s'];
+                                    }
+                                    $p['admin']['contact:status'] = implode('/', $a);
+                                    $p['admin']['contact:voice'] = (null !== $p['admin']['contact:voice']['@attributes']['x'])
+                                        ? $p['admin']['contact:voice']['@value'] . ' int. ' . $p['admin']['contact:voice']['@attributes']['x']
+                                        : $p['admin']['contact:voice']['@value'];
+                                    $p['admin']['contact:fax'] = (null !== $p['admin']['contact:fax']['@attributes']['x'])
+                                        ? $p['admin']['contact:fax']['@value'] . ' int. ' . $p['admin']['contact:fax']['@attributes']['x']
+                                        : $p['admin']['contact:fax']['@value'];
+                                    unset($p['admin']['contact:postalInfo']['@attributes']);
+                                    $p['admin'] = array_merge(
+                                        $p['admin'],
+                                        $p['admin']['contact:postalInfo'],
+                                        $p['admin']['contact:postalInfo']['contact:addr'],
+                                        $p['admin']['extcon:registrant']
+                                    );
+                                    unset($p['admin']['contact:addr']);
+                                    unset($p['admin']['contact:postalInfo']);
+                                    unset($p['admin']['extcon:registrant']);
+                                    $p['admin'] = $this->tree($p['admin']);
                                 }
-                                $p['tech'][$z]['contact:status'] = implode('/', $a);
-                                $p['tech'][$z]['contact:voice'] = (null !== $p['tech'][$z]['contact:voice']['@attributes']['x'])
-                                    ? $p['tech'][$z]['contact:voice']['@value'] . ' int. ' . $p['tech'][$z]['contact:voice']['@attributes']['x']
-                                    : $p['tech'][$z]['contact:voice']['@value'];
-                                $p['tech'][$z]['contact:fax'] = (null !== $p['tech'][$z]['contact:fax']['@attributes']['x'])
-                                    ? $p['tech'][$z]['contact:fax']['@value'] . ' int. ' . $p['tech'][$z]['contact:fax']['@attributes']['x']
-                                    : $p['tech'][$z]['contact:fax']['@value'];
-                                unset($p['tech'][$z]['contact:postalInfo']['@attributes']);
-                                $p['tech'][$z] = array_merge(
-                                    $p['tech'][$z],
-                                    $p['tech'][$z]['contact:postalInfo'],
-                                    $p['tech'][$z]['contact:postalInfo']['contact:addr'],
-                                    //$p['tech'][$z]['extcon:registrant']
-                                );
-                                unset($p['tech'][$z]['contact:addr']);
-                                unset($p['tech'][$z]['contact:postalInfo']);
-                                unset($p['tech'][$z]['extcon:registrant']);
-                                $p['tech'][$z] = $this->tree($p['tech'][$z]);
-                                $z++;
-                            } else if ($item['@attributes']['type'] === 'admin') {
-                                $p['admin'] = array_merge(
-                                    $item[$ext . ':infContact'],
-                                    $item[$ext . ':extInfo']
-                                );
-                                $a = null;
-                                foreach ($p['admin']['contact:status'] as $aa) {
-                                    $a[] = $aa['@attributes']['s'];
-                                }
-                                $p['admin']['contact:status'] = implode('/', $a);
-                                $p['admin']['contact:voice'] = (null !== $p['admin']['contact:voice']['@attributes']['x'])
-                                    ? $p['admin']['contact:voice']['@value'] . ' int. ' . $p['admin']['contact:voice']['@attributes']['x']
-                                    : $p['admin']['contact:voice']['@value'];
-                                $p['admin']['contact:fax'] = (null !== $p['admin']['contact:fax']['@attributes']['x'])
-                                    ? $p['admin']['contact:fax']['@value'] . ' int. ' . $p['admin']['contact:fax']['@attributes']['x']
-                                    : $p['admin']['contact:fax']['@value'];
-                                unset($p['admin']['contact:postalInfo']['@attributes']);
-                                $p['admin'] = array_merge(
-                                    $p['admin'],
-                                    $p['admin']['contact:postalInfo'],
-                                    $p['admin']['contact:postalInfo']['contact:addr'],
-                                    $p['admin']['extcon:registrant']
-                                );
-                                unset($p['admin']['contact:addr']);
-                                unset($p['admin']['contact:postalInfo']);
-                                unset($p['admin']['extcon:registrant']);
-                                $p['admin'] = $this->tree($p['admin']);
                             }
                         }
+                        $res[$element . ':infContacts'] = $p;
+                        unset($res['extension'][$ext . ':infContactsData']);
                     }
-                    $res[$element . ':infContacts'] = $p;
-                    unset($res['extension'][$ext . ':infContactsData']);
-                }
-                // ownStatus On Domain Command
-                if (isset($res['extension'][$ext . ':infData'])) {
-                    if (isset($res['extension'][$ext . ':infData'][$ext . ':ownStatus'])) {
-                        $res[$element . ':ownStatus'] = $res['extension'][$ext . ':infData'][$ext . ':ownStatus']['@attributes']['s'];
-                        unset($res['extension'][$ext . ':infData'][$ext . ':ownStatus']);
+                    // ownStatus On Domain Command
+                    if (isset($res['extension'][$ext . ':infData'])) {
+                        if (isset($res['extension'][$ext . ':infData'][$ext . ':ownStatus'])) {
+                            $res[$element . ':ownStatus'] = $res['extension'][$ext . ':infData'][$ext . ':ownStatus']['@attributes']['s'];
+                            unset($res['extension'][$ext . ':infData'][$ext . ':ownStatus']);
+                        }
+                        if (isset($res['extension'][$ext . ':infData'][$ext . ':consentForPublishing'])) {
+                            $res[$element . ':consentForPublishing'] = $res['extension'][$ext . ':infData'][$ext . ':consentForPublishing'];
+                            unset($res['extension'][$ext . ':infData'][$ext . ':consentForPublishing']);
+                        }
+                        if (isset($res['extension'][$ext . ':infData'][$ext . ':registrant'])) {
+                            $p = $res['extension'][$ext . ':infData'][$ext . ':registrant'];
+                            $res = array_merge($res, $p);
+                            unset($res['extension'][$ext . ':infData'][$ext . ':registrant']);
+                        }
+                        unset($res['extension'][$ext . ':infData']);
                     }
-                    if (isset($res['extension'][$ext . ':infData'][$ext . ':consentForPublishing'])) {
-                        $res[$element . ':consentForPublishing'] = $res['extension'][$ext . ':infData'][$ext . ':consentForPublishing'];
-                        unset($res['extension'][$ext . ':infData'][$ext . ':consentForPublishing']);
+                    // infNsToValidateData on Domain Command
+                    if (isset($res['extension'][$ext . ':infNsToValidateData'])) {
+                        $res[$element . ':nsToValidate'] = $res['extension'][$ext . ':infNsToValidateData'][$ext . ':nsToValidate'][$element . ':hostAttr'];
+                        foreach ($res[$element . ':nsToValidate'] as $aa) {
+                            $bb[] = $aa[$element . ':hostName'];
+                        }
+                        $res[$element . ':nsToValidate'] = $bb;
+                        unset($res['extension'][$ext . ':infNsToValidateData']);
                     }
-                    if (isset($res['extension'][$ext . ':infData'][$ext . ':registrant'])) {
-                        $p = $res['extension'][$ext . ':infData'][$ext . ':registrant'];
-                        $res = array_merge($res, $p);
-                        unset($res['extension'][$ext . ':infData'][$ext . ':registrant']);
-                    }
-                    unset($res['extension'][$ext . ':infData']);
-                }
-                // infNsToValidateData on Domain Command
-                if (isset($res['extension'][$ext . ':infNsToValidateData'])) {
-                    $res[$element . ':nsToValidate'] = $res['extension'][$ext . ':infNsToValidateData'][$ext . ':nsToValidate'][$element . ':hostAttr'];
-                    foreach ($res[$element . ':nsToValidate'] as $aa) {
-                        $bb[] = $aa[$element . ':hostName'];
-                    }
-                    $res[$element . ':nsToValidate'] = $bb;
-                    unset($res['extension'][$ext . ':infNsToValidateData']);
                 }
                 unset($res['extension']);
             }
@@ -635,7 +668,7 @@ abstract class EppAbstract
                 unset($res['trID']);
             }
             // Set $xmlResult
-            $this->xmlResult = $this->tree($res);
+            return $this->tree($res);
         } else {
             throw new EppException('Invalid response from server');
         }
@@ -780,11 +813,11 @@ abstract class EppAbstract
      * Execute query to EPP server
      *
      * @param mixed|null $clTRType client transaction type
-     * @param string|null $clTRObject client transaction object
+     * @param mixed|null $clTRObject client transaction object
      * @param boolean|null $storage store transaction and response
      * @return boolean status
      */
-    public function ExecuteQuery(mixed $clTRType = null, ?string $clTRObject = null, ?bool $storage = null)
+    public function ExecuteQuery(mixed $clTRType = null, mixed $clTRObject = null, ?bool $storage = null)
     {
         $this->debug >= $this->LogDebug['LOG_DEBUG'];
         $return_code = false;
@@ -797,8 +830,10 @@ abstract class EppAbstract
                 if (!empty($this->xmlResponse['error'])) {
                     //return $this->xmlResponse['error'];
                     $return_code = false;
+                    throw new EppException(message: $this->xmlResponse['error']);
                 }
-                if (!empty($this->xmlResponse['body']) && $this->ParseResponseBody($this->xmlResponse['body'])) {
+                if (!empty($this->xmlResponse['body'])) {
+                    $this->xmlResult = $this->ParseResponseBody($this->xmlResponse['body']);
                     // look for a server response code
                     // look for a server message
                     if (isset($this->xmlResult['result']['msg'])) {
@@ -807,7 +842,7 @@ abstract class EppAbstract
                         $this->svMsg = null;
                     }
                     // look for a server message code
-                    if ($this->svCode = $this->xmlResult['result']['code']) {
+                    if (isset($this->xmlResult['result']['code'])) {
                         $this->svCode = $this->xmlResult['result']['code'];
                         switch (substr($this->svCode, 0, 1)) {
                             case "1":
@@ -824,6 +859,7 @@ abstract class EppAbstract
                         $this->wrongValue = implode(' ', array_values($this->xmlResult['result']['wrongValue']));
                     }
                 } else {
+                    throw new EppException(message: "Unexpected result (no xml response code).");
                     $this->setError("Unexpected result (no xml response code).");
                     $return_code = false;
                 }
@@ -865,7 +901,7 @@ abstract class EppAbstract
             }
             return $return_code;
         } catch (EppException $e) {
-            throw new EppException($e);
+            throw new EppException($e->getMessage());
         }
     }
 

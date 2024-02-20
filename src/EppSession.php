@@ -24,12 +24,12 @@
 namespace EppClient;
 
 use EppClient\EppAbstract;
-use EppClient\EppDomXML;
 use EppClient\EppConnection;
 use EppClient\EppException;
 
 class EppSession extends EppAbstract
 {
+
     // array for use to XML structure to epp server
     public ?array $sessionVars = [
         'clID' => null,
@@ -58,8 +58,8 @@ class EppSession extends EppAbstract
     ) {
         parent::__construct(connection: $this->connection, tostore: $this->tostore);
         $this->initValues();
-        $this->sessionVars['clID'] = $this->connection->EPPCfg['username'];
-        $this->sessionVars['pw'] = $this->connection->EPPCfg['password'];
+        $this->sessionVars['clID'] = $this->connection->username;
+        $this->sessionVars['pw'] = $this->connection->password;
     }
 
     /**
@@ -68,23 +68,21 @@ class EppSession extends EppAbstract
      * @access public
      * @return boolean status
      */
-    public function hello()
+    public function Hello()
     {
-        if ($this->xmlquery = EppDomXML::Hello()) {
-            // query server (will return false)
-            if ($this->ExecuteQuery(clTRType: "hello", storage: true)) {
-                $this->sessionVars = array_merge($this->sessionVars, $this->xmlResult);
-                $this->registry = EppDomXML::Registry(registry: $this->xmlResult);
-                // this is the only query with no result code
-                if ((substr($this->xmlResult['code'], 0, 1) === "2")) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
+        $this->xmlQuery = EppDomXML::_Hello();
+        // query server (will return false)
+        $this->ExecuteQuery(clTRType: "hello", storage: true);
+        $this->Registry($this->xmlResult);
+        $this->sessionVars = array_merge($this->sessionVars, $this->xmlResult);
+        // this is the only query with no result code
+        /*
+        if ((substr($this->xmlResult['code'], 0, 1) === "2")) {
+            return true;
         } else {
             return false;
         }
+        */
     }
 
     /**
@@ -97,16 +95,17 @@ class EppSession extends EppAbstract
     private function loginout($which)
     {
         // query server
-        if ($this->ExecuteQuery(clTRType: $which, clTRObject: $which, storage: true)) {
-            // see if we got the expected information
-            if (isset($this->xmlResult['credit'])) {
-                $this->sessionVars['credit'] = $this->xmlResult['credit'];
-            }
-            return true;
-        } else {
-            $this->logout();
-            return false;
+        //if ($this->ExecuteQuery(clTRType: $which, clTRObject: $which, storage: true)) {
+        // see if we got the expected information
+        $this->ExecuteQuery(clTRType: $which, clTRObject: $which, storage: true);
+        if (isset($this->xmlResult['creditMsgData'])) {
+            $this->sessionVars['credit'] = $this->xmlResult['creditMsgData'];
         }
+        return true;
+        //} else {
+        //    $this->logout();
+        //    return false;
+        //}
     }
 
     /**
@@ -116,10 +115,10 @@ class EppSession extends EppAbstract
      * @param string optional new password
      * @return mix status (false or EPP status code)
      */
-    public function login($newPW = null)
+    public function Login($newPW = null)
     {
-        $this->sessionVars['newpw'] = (!is_null($newPW)) ? $newPW : null;
-        $this->xmlQuery = EppDomXML::Login($this->sessionVars);
+        $this->sessionVars['newpw'] = (null !== $newPW) ? $newPW : null;
+        $this->xmlQuery = EppDomXML::_Login($this->sessionVars);
         if (!empty($this->xmlQuery)) {
             return $this->loginout("login");
         } else {
@@ -133,7 +132,7 @@ class EppSession extends EppAbstract
      * @access public
      * @return boolean status
      */
-    public function keepalive()
+    public function KeepAlive()
     {
         return $this->hello();
     }
@@ -144,9 +143,9 @@ class EppSession extends EppAbstract
      * @access public
      * @return mix status (false or EPP status code)
      */
-    public function logout()
+    public function Logout()
     {
-        $this->xmlQuery = EppDomXML::Logout();
+        $this->xmlQuery = EppDomXML::_Logout();
         return $this->loginout("logout");
     }
 
@@ -157,9 +156,9 @@ class EppSession extends EppAbstract
      * @access public
      * @return integer message ID on top of message stack
      */
-    public function pollID()
+    public function PollID()
     {
-        $this->poll(false, 'req', null);
+        $this->Poll(false, 'req', null);
         return (int) $this->sessionVars['msgID'];
     }
 
@@ -170,9 +169,9 @@ class EppSession extends EppAbstract
      * @access public
      * @return integer amount of messages in queue
      */
-    public function pollMessageCount()
+    public function PollMessageCount()
     {
-        $this->poll(false, 'req', null);
+        $this->Poll(false, 'req', null);
         return (int) $this->sessionVars['msgTOT'];
     }
 
@@ -184,7 +183,7 @@ class EppSession extends EppAbstract
      * @param string message ID (default to empty)
      * @return boolean status
      */
-    public function poll(
+    public function Poll(
         ?bool $store = true,
         ?string $type = "req",
         ?string $msgID = null
@@ -205,10 +204,11 @@ class EppSession extends EppAbstract
         }
         $this->sessionVars['type'] = $type;
         $this->sessionVars['msgID'] = $msgID;
-        if ($this->xmlQuery = EppDomXML::Poll(['sessionvar' => $this->sessionVars, 'clTRID' => $this->connection->_clTRID(action: 'set')])) {
+        if ($this->xmlQuery = EppDomXML::_Poll(['sessionvar' => $this->sessionVars, 'clTRID' => $this->connection->_clTRID(action: 'set')])) {
             // query server
-            if ($this->ExecuteQuery("poll", "poll", ($this->debug >= LOG_DEBUG))) {
+            if ($this->ExecuteQuery(clTRType: "poll", clTRObject: "poll", storage: true)) {
                 // look at message counter
+                print_r($this->xmlResponse);
                 if (isset($this->xmlResult['msgQ'])) {
                     $this->sessionVars['msgTOT'] = (int) $this->xmlResult['msgQ']['count'];
                     $this->sessionVars['msgID'] = (int) $this->xmlResult['msgQ']['id'];
@@ -252,7 +252,7 @@ class EppSession extends EppAbstract
                         ];
                     }
                 } else {
-                    throw new EppException('Execute Query Poll has not been sussess!');
+                    //throw new EppException('Execute Query Poll has not Message!');
                 }
             } else {
                 throw new EppException('Execute Query Poll has not been sussess!');

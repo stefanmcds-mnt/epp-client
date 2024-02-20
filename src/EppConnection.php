@@ -22,12 +22,31 @@ class EppConnection
     protected array $headers = [
         'content-type' => 'text/xml; charset=UTF-8',
     ];
+    private ?object $connection = null;
+    private mixed $response = null;
+    private ?string $clTRID = null;
+
+
+    /**
+     * Procotcol communication with Epp Server
+     *
+     * @param string|null $action
+     * @param string|null $protocol
+     * @return string
+     */
+    public static function _setProtocol(?string $action, ?string $protocol = 'curl')
+    {
+        if ($action === 'set') {
+            self::$protocol = $protocol;
+        }
+        return self::$protocol;
+    }
 
     /**
      * Class constructor
      *
-     * - $config:
-     * array/object [
+     * Params can be passed as array or single es:
+     * [
      *  'server'=>'',      // epp server
      *  'port'=>'',        // port connect to can be null
      *  'username',        // username connect to server es registrar
@@ -41,70 +60,95 @@ class EppConnection
      *  'interface'        // the interface 
      *  'protocol'         // the type of connection to epp server curl|sock
      * ]
-     * - initialize View parent class and settings
-     * - initialize HTTP Client
      *
-     * @param array $config
+     *  @param string|null $server          epp server
+     *  @param int|null    $port            epp server port to can be null
+     *  @param string|null $username        epp username
+     *  @param string|null $password        epp password
+     *  @param string|null $clTRIDprefix    the clTRID prefix registrar sigle
+     *  @param string|null $handleprefix    the handle/id prefix used for create contact id
+     *  @param string|null $timezone        epp server timezone
+     *  @param string|null $lang,           epp server language can be null default en
+     *  @param string|null $debugfile,      the debugfile can be null
+     *  @param string|null $certificatefile epp server certificate file can be null
+     *  @param string|null $interface       epp interface 
+     *  @param string|null $protocol        type of connection to epp server curl|sock
+     *  @param string|null $cookie_dir      coocker folder
      *
+     * @return EppConnection
      */
     public function __construct(
-        public mixed $EPPCfg = null,
-        protected ?object $connection = null,
-        protected mixed $response = null,
-        protected ?string $clTRID = null,
-        public ?string $protocol = null,
-        protected ?string $cookie_dir = null
+        public ?string $server          = null,
+        public ?int    $port            = null,
+        public ?string $username        = null,
+        public ?string $password        = null,
+        public ?string $clTRIDprefix    = null,
+        public ?string $handleprefix    = null,
+        public ?string $timezone        = null,
+        public ?string $lang            = null,
+        public ?string $debugfile       = null,
+        public ?string $certificatefile = null,
+        public ?string $interface       = null,
+        public ?string $protocol        = null,
+        public ?string $cookie_dir      = null
     ) {
-        if ($this->EPPCfg === null) {
-            exit("CLASS: EPPClientClass form Client.php\n FATAL ERROR: config file not proper initialized\n");
-        } else if (!is_array($this->EPPCfg) && !is_object($this->EPPCfg)) {
-            exit('CLASS: EPPClientClass from Client.php\n FATAL ERROR: config file must be an array or object');
-        } else if (is_object($this->EPPCfg)) {
-            $this->EPPCfg = (array)$this->EPPCfg;
-        } else {
-            if (isset($this->EPPCfg['protocol'])) {
-                $this->protocol = $this->Protocol(action: "set", protocol: $this->EPPCfg['protocol']);
-            } else {
-                throw new EppException(message: 'Communication protocol can be set use EppConnection->Protocol(action:"set",protocol:"curl|sock")');
-            }
+        $status = true;
+        if ($this->server === null) {
+            $status = false;
+            throw new EppException(message: 'The EPP Server is not defined.');
+        } else if ($this->username === null) {
+            $status = false;
+            throw new EppException(message: 'The EPP Username is not defined.');
+        } else if ($this->password === null) {
+            $status = false;
+            throw new EppException(message: "The EPP Password is not defined.");
+        } else if ($this->protocol === null) {
+            $status = false;
+            throw new EppException(message: 'The Connection Protocol is not defined (curl or sock).');
+        } else if ($this->clTRIDprefix === null) {
+            $this->setPrefix('clTRID');
+        } else if ($this->handleprefix === null) {
+            $this->setPrefix('handle');
+        }
+        if (true === $status) {
             // setup default time zone
-            if (isset($this->EPPCfg['timezone'])) {
-                date_default_timezone_set($this->EPPCfg['timezone']);
+            if (isset($this->$timezone)) {
+                date_default_timezone_set($this->timezone);
             } else {
                 date_default_timezone_set("Europe/Rome");
             }
             // configure temporary folder for storing cookies
             $this->cookie_dir = '/tmp';
             // initialize connection
-            $this->protocol = '\\EppClient\\Epp' . ucwords(strtolower($this->protocol));
-            if ($this->connection = new $this->protocol(server: $this->EPPCfg['server'])) {
-                if ($this->connection !== null) {
-                    $this->connection->Headers(action: 'set', headers: $this->headers);
-                    // set server port
-                    if (!empty($this->EPPCfg['port'])) {
-                        $this->connection->Port(action: 'set', port: (int) $this->EPPCfg['port']);
+            if ($this->protocol === 'curl') {
+                $this->connection = new EppCurl(server: $this->server, port: $this->port, username: $this->username, password: $this->password);
+            } elseif ($this->protocol === 'sock') {
+                $this->connection = new EppSock(_url: $this->server, _authName: $this->username, _authPass: $this->password);
+            }
+            if ($this->connection !== null) {
+                $this->connection->Headers(action: 'set', headers: $this->headers);
+                // set server port
+                if (!empty($this->port)) {
+                    $this->connection->Port(action: 'set', port: (int) $this->port);
+                }
+                // set debug filename
+                if (!empty($this->debugfile)) {
+                    $this->connection->DebugFile(action: 'set', file: $this->debugfile);
+                }
+                // setup client certificate
+                if (!empty($this->certificatefile)) {
+                    if (is_readable($this->certificatefile)) {
+                        $this->connection->ClientCert(action: 'set', certFile: $this->certificatefile);
+                    } else if (is_readable(realpath(dirname(__FILE__) . '/../../' . $this->certificatefile))) {
+                        $this->connection->ClientCert(action: 'set', certFile: realpath(dirname(__FILE__) . '/../../' . $this->certificatefile));
                     }
-                    // set debug filename
-                    if (!empty($this->EPPCfg['debugfile'])) {
-                        $this->connection->DebugFile(action: 'set', file: $this->EPPCfg['debugfile']);
-                    }
-                    // setup client certificate
-                    if (!empty($this->EPPCfg['certificatefile'])) {
-                        if (is_readable($this->EPPCfg['certificatefile'])) {
-                            $this->connection->ClientCert(action: 'set', certFile: $this->EPPCfg['certificatefile']);
-                        } else if (is_readable(realpath(dirname(__FILE__) . '/../../' . $this->EPPCfg['certificatefile']))) {
-                            $this->connection->ClientCert(action: 'set', certFile: realpath(dirname(__FILE__) . '/../../' . $this->EPPCfg['certificatefile']));
-                        }
-                    }
-                    // setup leaving interface
-                    if (!empty($this->EPPCfg['interface'])) {
-                        $this->connection->Interface(action: 'set', interface: $this->EPPCfg['interface']);
-                    }
-                } else {
-                    throw new EppException('EPP Connection not success');
+                }
+                // setup leaving interface
+                if (!empty($this->interface)) {
+                    $this->connection->Interface(action: 'set', interface: $this->interface);
                 }
             } else {
-                throw new EppException('EPP Connection');
+                throw new EppException('EPP Connection not success');
             }
             // set client transaction ID
             $this->_clTRID(action: 'set');
@@ -123,21 +167,6 @@ class EppConnection
     }
 
     /**
-     * Procotcol communication with Epp Server
-     *
-     * @param string|null $action
-     * @param string|null $protocol
-     * @return string
-     */
-    protected function Protocol(?string $action, ?string $protocol = 'curl')
-    {
-        if ($action === 'set') {
-            $this->protocol = $protocol;
-        }
-        return $this->protocol;
-    }
-
-    /**
      * reset connection by removing the cookie file
      *
      * @access public
@@ -149,6 +178,23 @@ class EppConnection
     }
 
     /**
+     * Set ClTRID Prefix
+     *
+     * @param string|null $prefix
+     * @return mixed
+     */
+    public function setPrefix(?string $prefix = null)
+    {
+        if ($prefix !== null) {
+            $prefix = $prefix . 'prefix';
+            $this->$prefix = $prefix;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * initialize the client transaction ID
      *
      * @access public
@@ -157,7 +203,7 @@ class EppConnection
     public function _clTRID(?string $action = null)
     {
         if ($action === 'set') {
-            $this->clTRID = $this->EPPCfg['clTRIDprefix'] . "-" . time() . "-" . substr(md5(rand()), 0, 5);
+            $this->clTRID = $this->clTRIDprefix . "-" . time() . "-" . substr(md5(rand()), 0, 5);
             if (strlen($this->clTRID) > 32) {
                 $this->clTRID = substr($this->clTRID, -32);
             }

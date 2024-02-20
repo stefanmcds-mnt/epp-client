@@ -17,51 +17,17 @@ namespace EppClient;
 
 use Utilita\Array2XML;
 
-class EppDomXML extends EppAbstract
+trait EppDomXML
 {
+    // Set Registry
+    static private ?array $registro;
 
     /**
-     * Construnctor Class
-     *
-     * @param mixed|null $registry
+     * Initialize
      */
-    public function __construct(
-        public mixed $registry,
-        public ?string $xmlQuery
-    ) {
-    }
-
-    /**
-     * Set Registry
-     *
-     * @param mixed $registry
-     * @return mixed
-     */
-    public static function Registry(mixed $registry)
+    public function __construct()
     {
-        self::$registry = array_merge(self::$registry, $registry);
-        foreach (self::$registry['objURI'] as $item) {
-            $a = explode(':', $item);
-            $b = explode('-', end($a));
-            self::$registry[reset($b)] = [
-                'xmlns:' . reset($b) => $item,
-                'xsi:schemaLocation' => $item . ' ' . end($a) . '.xsd',
-            ];
-        }
-        foreach (self::$registry['extURI'] as $item) {
-            if (stristr($item, 'http')) {
-                $a = explode('/', $item);
-            }
-            if (stristr($item, ':')) {
-                $a = explode(':', $item);
-            }
-            $b = explode('-', end($a));
-            self::$registry[reset($b)] = [
-                'xmlns:' . reset($b) => $item,
-                'xsi:schemaLocation' => $item . ' ' . end($a) . '.xsd',
-            ];
-        }
-        return parent::$registry;
+        $this->registro = parent::$registry;
     }
 
     /**
@@ -70,12 +36,12 @@ class EppDomXML extends EppAbstract
      * @param array $finalElement
      * @return mixed
      */
-    private static function _XML(array $finalElement)
+    static private function _XML(array $finalElement)
     {
-        $xml = Array2XML::getXMLRoot();
-        $xml->appendChild(Array2XML::convert('epp', $finalElement));
+        //$xml = Array2XML::getXMLRoot();
+        //$xml->appendChild(Array2XML::convert('epp', $finalElement));
+        $xml = Array2XML::createXML('epp', $finalElement);
         return $xml->saveXML();
-        //return parent::$xmlQuery = $xml->saveXML();
     }
 
     /**
@@ -83,7 +49,7 @@ class EppDomXML extends EppAbstract
      *
      * @return void
      */
-    public static function Hello()
+    static public function _Hello()
     {
         $finalElement = [
             '@attributes' => [
@@ -99,7 +65,7 @@ class EppDomXML extends EppAbstract
      * @param mixed $var
      * @return void
      */
-    public static function Login(mixed $vars)
+    static public function _Login(mixed $vars)
     {
         $finalElement = [
             '@attributes' => [
@@ -112,27 +78,29 @@ class EppDomXML extends EppAbstract
                     'clID' => $vars['clID'],
                     'pw' => $vars['pw'],
                     'options' => [
-                        'version' => self::$registry['version'],
-                        'lang' => self::$registry['lang'][0],
+                        'version' => (isset(self::$registro['version']))
+                            ? self::$registro['version']
+                            : '1.0',
+                        'lang' => (isset(self::$registro['lang']))
+                            ? self::$registro['lang'][0]
+                            : 'en',
                     ],
                     'svcs' => [
-                        /*
-                        'objURI' => [
-                            'urn:ietf:params:xml:ns:contact-1.0',
-                            'urn:ietf:params:xml:ns:domain-1.0',
-                        ],
-                        'svcExtension' => [
-                            'extURI' => [
-                                'http://www.nic.it/ITNIC-EPP/extepp-2.0',
-                                'http://www.nic.it/ITNIC-EPP/extcon-1.0',
-                                'http://www.nic.it/ITNIC-EPP/extdom-2.0',
-                                'urn:ietf:params:xml:ns:rgp-1.0',
+                        'objURI' => (isset(self::$registro['objetURI']))
+                            ? array_values(self::$registro['objetURI'])
+                            : [
+                                'urn:ietf:params:xml:ns:contact-1.0',
+                                'urn:ietf:params:xml:ns:domain-1.0',
                             ],
-                        ],
-                        */
-                        'objURI' => array_values(self::$registry['objetURI']),
                         'svcExtension' => [
-                            'extURI' => array_values(self::$registry['extURI']),
+                            'extURI' => (isset(self::$registro['extURI']))
+                                ? array_values(self::$registro['extURI'])
+                                : [
+                                    'http://www.nic.it/ITNIC-EPP/extepp-2.0',
+                                    'http://www.nic.it/ITNIC-EPP/extcon-1.0',
+                                    'http://www.nic.it/ITNIC-EPP/extdom-2.0',
+                                    'urn:ietf:params:xml:ns:rgp-1.0',
+                                ],
                         ],
                     ],
                 ],
@@ -148,7 +116,7 @@ class EppDomXML extends EppAbstract
      *
      * @return object
      */
-    public static function Logout()
+    static public function _Logout()
     {
         $finalElement = [
             '@attributes' => [
@@ -157,7 +125,7 @@ class EppDomXML extends EppAbstract
                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd'
             ],
             'command' => [
-                'logout'
+                0 => ['logout']
             ]
         ];
         return self::_XML($finalElement);
@@ -168,7 +136,7 @@ class EppDomXML extends EppAbstract
      * @param array|null $vars
      * @return object
      */
-    public static function Poll(?array $vars)
+    static public function _Poll(?array $vars)
     {
         $finalElement = [
             '@attributes' => [
@@ -196,7 +164,7 @@ class EppDomXML extends EppAbstract
      * @param array|null $vars
      * @return object
      */
-    public static function Check(?array $vars)
+    static public function _Check(?array $vars)
     {
         $finalElement = [
             '@attributes' => [
@@ -212,25 +180,23 @@ class EppDomXML extends EppAbstract
         if (isset($vars['contact'])) {
             $finalElement['command']['check'] = [
                 'contact:check' => [
-                    /*
-                    '@attributes' => [
-                        'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
-                    ],
-                    */
-                    '@attributes' => self::$registry['contact'],
+                    '@attributes' => (isset(self::$registro['contact']))
+                        ? self::$registro['contact']
+                        : [
+                            'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
+                        ],
                     'contact:id' => $vars['contact']
                 ]
             ];
         } else if (isset($vars['domain'])) {
             $finalElement['command']['check'] = [
                 'domain:check' => [
-                    /*
-                    '@attributes' => [
-                        'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
-                        'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
-                    ],
-                    */
-                    '@attributes' => self::$registry['domain'],
+                    '@attributes' => (isset(self::$registro['domain']))
+                        ? self::$registro['domain']
+                        : [
+                            'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
+                            'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
+                        ],
                 ]
             ];
             if (is_array($vars['domains'])) {
@@ -251,7 +217,7 @@ class EppDomXML extends EppAbstract
      * @param array|null $vars
      * @return object
      */
-    public static function ChangePasswod(?array $vars)
+    static public function _ChangePasswod(?array $vars)
     {
         $finalElement = [
             '@attributes' => [
@@ -266,23 +232,21 @@ class EppDomXML extends EppAbstract
                     'lang' => 'en',
                 ],
                 'svcs' => [
-                    /*
-                        'objURI' => [
+                    'objURI' => (isset(self::$registro['objetURI']))
+                        ? array_values(self::$registro['objetURI'])
+                        :  [
                             'urn:ietf:params:xml:ns:contact-1.0',
                             'urn:ietf:params:xml:ns:domain-1.0',
                         ],
-                        'svcExtension' => [
-                            'extURI' => [
+                    'svcExtension' => [
+                        'extURI' => isset(self::$registro['extURI'])
+                            ? array_values(self::$registro['extURI'])
+                            : [
                                 'http://www.nic.it/ITNIC-EPP/extepp-2.0',
                                 'http://www.nic.it/ITNIC-EPP/extcon-1.0',
                                 'http://www.nic.it/ITNIC-EPP/extdom-2.0',
                                 'urn:ietf:params:xml:ns:rgp-1.0',
                             ],
-                        ],
-                        */
-                    'objURI' => array_values(self::$registry['objetURI']),
-                    'svcExtension' => [
-                        'extURI' => array_values(self::$registry['extURI']),
                     ],
                 ],
             ]
@@ -295,7 +259,7 @@ class EppDomXML extends EppAbstract
      * @param array|null $vars
      * @return object
      */
-    public static function Create(?array $vars)
+    static public function _Create(?array $vars)
     {
         if (isset($vars['contact'])) {
             $finalElement = self::_CreateContact($vars);
@@ -312,7 +276,7 @@ class EppDomXML extends EppAbstract
      * @param array|null $vars
      * @return array
      */
-    private static function _CreateContact(?array $vars)
+    static private function _CreateContact(?array $vars)
     {
         $finalElement = [
             '@attributes' => [
@@ -324,13 +288,12 @@ class EppDomXML extends EppAbstract
                 'clTRID' => $vars['clTRID'],
                 'create' => [
                     'contact:create' => [
-                        /*
-                        '@attributes' => [
-                            'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
-                            'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
-                        ],
-                        */
-                        '@attributes' => self::$registry['contact'],
+                        '@attributes' => (isset(self::$registro['contact']))
+                            ? self::$registro['contact']
+                            : [
+                                'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
+                                'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
+                            ],
                         'contact:id' => $vars['contact']['handle'],
                         'contact:postalInfo' => [
                             '@attributes' => [
@@ -365,13 +328,12 @@ class EppDomXML extends EppAbstract
                 ],
                 'extension' => [
                     'extcon:create' => [
-                        /*
-                        '@attributes' => [
-                            'xmlns:extcon' => 'http://www.nic.it/ITNIC-EPP/extcon-1.0',
-                            'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extcon-1.0 extcon-1.0.xsd',
-                        ],
-                        */
-                        '@attributes' => self::$registry['extcon'],
+                        '@attributes' => (isset(self::$registro['extcon']))
+                            ? self::$registro['extcon']
+                            : [
+                                'xmlns:extcon' => 'http://www.nic.it/ITNIC-EPP/extcon-1.0',
+                                'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extcon-1.0 extcon-1.0.xsd',
+                            ],
                         'extcon:consentForPublishing' => $vars['contact']['consentforpublishing'],
                     ],
                 ],
@@ -395,7 +357,7 @@ class EppDomXML extends EppAbstract
      * @param array|null $vars
      * @return array
      */
-    private static function _CreateDomain(?array $vars)
+    static private function _CreateDomain(?array $vars)
     {
         $finalElement = [
             '@attributes' => [
@@ -407,13 +369,12 @@ class EppDomXML extends EppAbstract
                 'clTRID' => $vars['clTRID'],
                 'create' => [
                     'domain:create' => [
-                        /*
-                        '@attributes' => [
-                            'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
-                            'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
-                        ],
-                        */
-                        '@attributes' => self::$registry['domain'],
+                        '@attributes' => (isset(self::$registro['domain']))
+                            ? self::$registro['domain']
+                            : [
+                                'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
+                                'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
+                            ],
                         'domain:name' => $vars['domain']['domain'],
                         'domain:period' => [
                             '@attributes' => [
@@ -478,7 +439,7 @@ class EppDomXML extends EppAbstract
      * @param array|null $vars
      * @return objext
      */
-    public static function CancelDeleteDomain(?array $vars)
+    static public function _CancelDeleteDomain(?array $vars)
     {
         $finalElement = [
             '@attributes' => [
@@ -493,13 +454,12 @@ class EppDomXML extends EppAbstract
                         'op' => 'cancel'
                     ],
                     'domain:transfer' => [
-                        /*
-                        '@attributes' => [
-                            'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
-                            'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
-                        ],
-                        */
-                        '@attributes' => self::$registry['domain'],
+                        '@attributes' => (isset(self::$registro['domain']))
+                            ? self::$registro['domain']
+                            : [
+                                'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
+                                'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
+                            ],
                         'domain:name' => $vars['domain']['domain'],
                         'domain:authInfo' => [
                             'domain:pw' => $vars['domain']['authinfo'],
@@ -516,7 +476,7 @@ class EppDomXML extends EppAbstract
      * @param array|null $vars
      * @return object
      */
-    public static function Delete(?array $vars)
+    static public function _Delete(?array $vars)
     {
         if (isset($vars['contact'])) {
             $finalElement = self::_DeleteContact($vars);
@@ -533,7 +493,7 @@ class EppDomXML extends EppAbstract
      * @param array|null $vars
      * @return array
      */
-    private static function _DeleteContact(?array $vars)
+    static private function _DeleteContact(?array $vars)
     {
         $finalElement = [
             '@attributes' => [
@@ -551,7 +511,12 @@ class EppDomXML extends EppAbstract
                             'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
                         ],
                         */
-                        '@attributes' => self::$registry['contact'],
+                        '@attributes' => (isset(self::$registro['contact']))
+                            ? self::$registro['contact']
+                            : [
+                                'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
+                                'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
+                            ],
                         'contact:id' => $vars['contact'],
                     ],
                 ],
@@ -565,7 +530,7 @@ class EppDomXML extends EppAbstract
      * @param array|null $vars
      * @return array
      */
-    private static function _DeleteDomain(?array $vars)
+    static private function _DeleteDomain(?array $vars)
     {
         $finalElement = [
             '@attributes' => [
@@ -577,13 +542,12 @@ class EppDomXML extends EppAbstract
                 'clTRID' => $vars['clTRID'],
                 'delete' => [
                     'domain:delete' => [
-                        /*
-                        '@attributes' => [
-                            'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
-                            'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
-                        ],
-                        */
-                        '@attributes' => self::$registry['domain'],
+                        '@attributes' => (isset(self::$registro['domain']))
+                            ? self::$registro['domain']
+                            : [
+                                'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
+                                'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
+                            ],
                         'domain:name' => $vars['domain'],
                     ],
                 ],
@@ -597,7 +561,7 @@ class EppDomXML extends EppAbstract
      * @param array|null $vars
      * @return object
      */
-    public static function Info(?array $vars)
+    static public function _Info(?array $vars)
     {
         $finalElement = [
             '@attributes' => [
@@ -613,13 +577,12 @@ class EppDomXML extends EppAbstract
         if (isset($vars['contact'])) {
             $finalElement['command']['info'] = [
                 'contact:info' => [
-                    /*
-                    '@attributes' => [
-                        'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
-                        'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
-                    ],
-                    */
-                    '@attributes' => self::$registry['contact'],
+                    '@attributes' => (isset(self::$registro['contact']))
+                        ? self::$registro['contact']
+                        : [
+                            'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
+                            'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
+                        ],
                     'contact:id' => $vars['contact'],
                 ]
             ];
@@ -627,13 +590,12 @@ class EppDomXML extends EppAbstract
             if (!is_null($vars['domains']['authinfo'])) {
                 $finalElement['command']['info'] = [
                     'domain:info' => [
-                        /*
-                        '@attributes' => [
-                            'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
-                            'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd'
-                        ],
-                        */
-                        '@attributes' => self::$registry['domain'],
+                        '@attributes' => (isset(self::$registro['domain']))
+                            ? self::$registro['domain']
+                            : [
+                                'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
+                                'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd'
+                            ],
                         'domain:name' => [
                             '@attribute' => [
                                 'hosts' => 'all',
@@ -648,13 +610,12 @@ class EppDomXML extends EppAbstract
             } else {
                 $finalElement['command']['info'] = [
                     'domain:info' => [
-                        /*
-                        '@attributes' => [
-                            'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
-                            'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd'
-                        ],
-                        */
-                        '@attributes' => self::$registry['domain'],
+                        '@attributes' => (isset(self::$registro['domain']))
+                            ? self::$registro['domain']
+                            : [
+                                'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
+                                'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd'
+                            ],
                         'domain:name' => [
                             '@attribute' => [
                                 'hosts' => 'all',
@@ -670,7 +631,9 @@ class EppDomXML extends EppAbstract
                         'op' => (isset($vars['infContacts'])) ? $vars['infContacts'] : 'all',
                         /*'xmlns:extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0',
                         'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd',*/
-                        self::$registry['domain']
+                        (isset(self::$registro['domain']))
+                            ? self::$registro['domain']
+                            : ['xmlns:extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0', 'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd'],
                     ]
                 ],
             ];
@@ -685,7 +648,7 @@ class EppDomXML extends EppAbstract
      * @param array|null $vars
      * @return object
      */
-    public static function Restore(?array $vars)
+    static public function _Restore(?array $vars)
     {
         $finalElement = [
             '@attributes' => [
@@ -697,23 +660,23 @@ class EppDomXML extends EppAbstract
                 'clTRID' => $vars['clTRID'],
                 'update' => [
                     'domain:update' => [
-                        /*
-                        '@attributes' => [
-                            'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
-                            'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
-                        ],
-                        */
-                        '@attributes' => self::$registry['domain'],
+                        '@attributes' => (isset(self::$registro['domain']))
+                            ? self::$registro['domain']
+                            : [
+                                'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
+                                'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
+                            ],
                         'domain:name' => $vars['domain'],
                         'domain:chg',
                     ],
                 ],
                 'extension' => [
-                    'rgp:update' => self::$registry['rgp'],
-                    /*[
-                        'xmlns:rgp' => 'urn:ietf:params:xml:ns:rgp-1.0',
-                        'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:rgp-1.0 rgp-1.0.xsd',
-                    ]*/
+                    'rgp:update' => (isset(self::$registro['rgp']))
+                        ? self::$registro['rgp']
+                        : [
+                            'xmlns:rgp' => 'urn:ietf:params:xml:ns:rgp-1.0',
+                            'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:rgp-1.0 rgp-1.0.xsd',
+                        ],
                     'rgp:restore' => [
                         '@attributes' => [
                             'op' => 'request',
@@ -731,7 +694,7 @@ class EppDomXML extends EppAbstract
      * @param string|null $motive
      * @return object
      */
-    public static function Tranfer(?array $vars, ?string $motive)
+    static public function _Tranfer(?array $vars, ?string $motive)
     {
         if (isset($op)) {
             $finalElement = [
@@ -746,13 +709,12 @@ class EppDomXML extends EppAbstract
                             'op' => strtolower($motive),
                         ],
                         'domain:transfer' => [
-                            /*
-                            '@attributes' => [
-                                'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
-                                'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
-                            ],
-                            */
-                            '@attributes' => self::$registry['domain'],
+                            '@attributes' => (isset(self::$registro['domain']))
+                                ? self::$registro['domain']
+                                : [
+                                    'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
+                                    'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
+                                ],
                             'domain:name' => $vars['domain']['domain'],
                             'domain:authInfo' => [
                                 'domain:pw' > $vars['domain']['authinfo'],
@@ -767,13 +729,12 @@ class EppDomXML extends EppAbstract
                 ];
                 $finalElement['command']['extension'] = [
                     'extdom:trade' => [
-                        /*
-                        '@attributes' => [
-                            'xmlns:extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0',
-                            'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd',
-                        ],
-                        */
-                        '@attributes' => self::$registry['extdom'],
+                        '@attributes' => (isset(self::$registro['extdom']))
+                            ? self::$registro['extdom']
+                            : [
+                                'xmlns:extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0',
+                                'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd',
+                            ],
                         'extdom:transferTrade' => [
                             'extdom:newRegistrant' => $vars['domain']['registrant'],
                             'extdom:newAuthInfo' => [
@@ -795,7 +756,7 @@ class EppDomXML extends EppAbstract
      * @param string|null $what
      * @return objext
      */
-    public static function Update(?array $vars, ?string $what = null)
+    static public function _Update(?array $vars, ?string $what = null)
     {
         if (isset($vars['contact'])) {
             $finalElement = self::_UpdateContact($vars);
@@ -813,7 +774,7 @@ class EppDomXML extends EppAbstract
      * @param string|null $what
      * @return array
      */
-    private static function _UpdateDomain(?array $vars, ?string $what)
+    static private function _UpdateDomain(?array $vars, ?string $what)
     {
         $finalElement = [
             '@attributes' => [
@@ -825,13 +786,12 @@ class EppDomXML extends EppAbstract
                 'clTRID' => $vars['clTRID'],
                 'update' => [
                     'domain:update' => [
-                        /*
-                        '@attributes' => [
-                            'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
-                            'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
-                        ],
-                        */
-                        '@attributes' => self::$registry['domain'],
+                        '@attributes' => (isset(self::$registro['domain']))
+                            ? self::$registro['domain']
+                            : [
+                                'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
+                                'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
+                            ],
                         'domain:name' => $vars['domain']['domain'],
                         'domain:chg' => [
                             'domain:authInfo' => [
@@ -908,7 +868,7 @@ class EppDomXML extends EppAbstract
      * @param array|null $vars
      * @return array
      */
-    private static function _UpdateContact(?array $vars)
+    static private function _UpdateContact(?array $vars)
     {
         $finalElement = [
             '@attributes' => [
@@ -921,13 +881,12 @@ class EppDomXML extends EppAbstract
                 'update' => [
                     'contact:update' => [
                         [
-                            /*
-                            'attributes' => [
-                                'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
-                                'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
-                            ],
-                            */
-                            'attributes' => self::$registry['contact'],
+                            'attributes' => (isset(self::$registro['contact']))
+                                ? self::$registro['contact']
+                                : [
+                                    'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
+                                    'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
+                                ],
                             'contact:id' => $vars['contact']['handle'],
                             'contact:add' => [
                                 'contact:status' => [
@@ -944,13 +903,12 @@ class EppDomXML extends EppAbstract
                     ],
                     'extension' => [
                         'extcon:update' => [
-                            /*
-                            '@attributes' => [
-                                'xmlns:extcon' => 'http://www.nic.it/ITNIC-EPP/extcon-1.0',
-                                'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extcon-1.0 extcon-1.0.xsd',
-                            ],
-                            */
-                            'attributes' => self::$registry['extcon'],
+                            'attributes' => (isset(self::$registro['extcon']))
+                                ?  self::$registro['extcon']
+                                : [
+                                    'xmlns:extcon' => 'http://www.nic.it/ITNIC-EPP/extcon-1.0',
+                                    'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extcon-1.0 extcon-1.0.xsd',
+                                ],
                             'extcon:consentForPublishing' => $vars['contact']['consentforpublishing'],
                         ],
                     ],

@@ -25,7 +25,7 @@ use EppClient\EppDomain;
 class Epp
 {
 
-    protected ?array $LogDebug = [
+    public ?array $LogDebug = [
         'LOG_EMERG' => 0, /* system is unusable */
         'LOG_ALERT' => 1, /* action must be taken immediately */
         'LOG_CRIT' => 2, /* critical conditions */
@@ -77,59 +77,63 @@ class Epp
      *
      * @return $nic istance
      */
-    public function goCLIENT(?array $config = null)
+    public static function goCLIENT(?array $config = null)
     {
         //EppConnection::Protocol(action: "set", protocol: "curl");
         //self::$client = new EppConnection(EPPCfg: $config);
-        $this->connection = new EppConnection(EPPCfg: $this->config);
-        return $this->connection;
+        //$this->connection = new EppConnection($config);
+        //return $this->connection;
+        return new EppConnection(...$config);
     }
 
     /**
      * Initialize Session Istance
      *
-     * @param mixed $nic istance
+     * @param mixed $connection istance
      * @param bool $tostore
      * @return object $session istance
      */
-    public function goSESSION(
+    public static function goSESSION(
         ?EppConnection $connection = null,
         ?bool $tostore = true
     ) {
-        $session = new EppSession(connection: $this->connection, tostore: $tostore);
-        $session->debug = $this->LogDebug['LOG_DEBUG'];
+        $session = new EppSession(connection: $connection, tostore: $tostore);
+        //$session->debug = $this->LogDebug['LOG_DEBUG'];
+        //$session->debug = self::$LogDebug['LOG_DEBUG'];
         return $session;
     }
 
     /**
      * Initialize Contact Istance
      *
-     * @param mixed $nic istance
+     * @param mixed $connection istance
      * @param bool $tostore
      * @return object $contact istance
      */
-    public function goCONTACT(
+    public static function goCONTACT(
         ?EppConnection $connection = null,
         ?bool $tostore = true
     ) {
-        $contact = new EppContact(connection: $this->connection, tostore: $tostore);
-        $contact->debug = $this->LogDebug['LOG_DEBUG'];
+        $contact = new EppContact(connection: $connection, tostore: $tostore);
+        //$contact->debug = $this->LogDebug['LOG_DEBUG'];
+        //$contact->debug = self::$LogDebug['LOG_DEBUG'];
         return $contact;
     }
 
     /**
      * Initialize Domain Istance
      *
-     * @param mixed $nic istance
+     * @param mixed $connection istance
      * @param bool $tostore
      * @return object $domain istance
      */
-    public function goDOMAIN(
+    public static function goDOMAIN(
         ?EppConnection $connection = null,
         ?bool $tostore = true
     ) {
-        $domain = new EppDomain(connection: $this->connection, tostore: $tostore);
-        $domain->debug = $this->LogDebug['LOG_DEBUG'];
+        $domain = new EppDomain(connection: $connection, tostore: $tostore);
+        //$domain->debug = $this->LogDebug['LOG_DEBUG'];
+        //$domain->debug = self::$LogDebug['LOG_DEBUG'];
         return $domain;
     }
 }

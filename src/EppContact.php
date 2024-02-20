@@ -24,7 +24,6 @@
 namespace EppClient;
 
 use EppClient\EppAbstract;
-use EppClient\EppDomXML;
 use EppClient\EppConnection;
 
 class EppContact extends EppAbstract
@@ -70,7 +69,7 @@ class EppContact extends EppAbstract
         protected ?EppConnection $connection,
         protected ?bool $tostore = true
     ) {
-        parent::__construct(connection: $this->connection, tostore: $this->storage);
+        parent::__construct(connection: $this->connection, tostore: $this->tostore);
         $this->initValues();
     }
 

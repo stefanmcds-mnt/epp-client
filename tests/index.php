@@ -1,16 +1,31 @@
 <?php
 
-require_once('config.php');
+include 'config.php';
+
+$included = get_included_files();
+foreach ($included as $item) {
+    print_r('Loaded Class ' . $item . "\n");
+}
 
 use EppClient\Epp;
 
 $message = false;
-$epp = new Epp($GLOBALS['server']);
+//$epp = new Epp($GLOBALS['server']);
 
-$connection = $epp->goCLIENT();
-$session = $epp->goSESSION($connection, true);
-$contact = $epp->goCONTACT($connection, true);
-$domain = $epp->goDOMAIN($connection, true);
+$connection = Epp::goCLIENT($GLOBALS['server']);
+$session = Epp::goSESSION($connection, true);
+$contact = Epp::goCONTACT($connection, true);
+$domain = Epp::goDOMAIN($connection, true);
 
 $session->Hello();
-print_r($session::$sessionVars);
+$session->Login();
+$session->Poll();
+//$domain->Check('stedns.it');
+$session->Logout();
+
+print_r($domain->xmlQuery);
+print_r($domain->xmlResult);
+print_r($session->xmlQuery);
+print_r($session->sessionVars);
+//print_r($session->xmlResponse['body']);
+//print_r($session->xmlResult);

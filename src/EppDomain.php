@@ -32,7 +32,6 @@
 namespace EppClient;
 
 use EppClient\EppAbstract;
-use EppClient\EppDomXML;
 use EppClient\EppConnection;
 use Algo26\IdnaConvert\ToIdn;
 
@@ -87,7 +86,7 @@ class EppDomain extends EppAbstract
      * @param    mixed $domains  optional domain to check (set domain!)
      * @return   mixed|boolean   array([name] => esempio1.it, [avail] => false, [reason] => Domain is registered) or boolean -1 error
      */
-    public function check(mixed $domains = null)
+    public function Check(mixed $domains = null)
     {
         if ($domains === null) {
             $domains = $this->domainVars['name'];
@@ -98,7 +97,7 @@ class EppDomain extends EppAbstract
             return -2;
         }
         // fetch xml template
-        $this->xmlQuery = EppDomXML::Check(vars: ['domains' => $domains, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
+        $this->xmlQuery = EppDomXML::_Check(vars: ['domains' => $domains, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server
         if ($this->ExecuteQuery(clTRType: "check-domain", clTRObject: $domains, storage: true)) {
             $this->domainVars = array_merge($this->domainVars, $this->xmlResult);
@@ -116,9 +115,9 @@ class EppDomain extends EppAbstract
      * @param    boolean execute internal sanity checks
      * @return   boolean status
      */
-    public function create()
+    public function Create()
     {
-        $this->xmlQuery = EppDomXML::Create(vars: ['domain' => $this->domainVars, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
+        $this->xmlQuery = EppDomXML::_Create(vars: ['domain' => $this->domainVars, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server and return answer (no handling of special return values)
         if ($this->ExecuteQuery(clTRType: "create-domain", clTRObject: $this->domainVars['name'], storage: true)) {
             $this->nsinitial = $this->domainVars['ns'];
@@ -139,7 +138,7 @@ class EppDomain extends EppAbstract
      * @param    string
      * @return   boolean status
      */
-    public function fetch(?string $domain = null, ?string $authinfo = null, ?string $infContacts = 'all')
+    public function Fetch(?string $domain = null, ?string $authinfo = null, ?string $infContacts = 'all')
     {
         if ($domain === null) {
             $domain = $this->domainVars['name'];
@@ -159,7 +158,7 @@ class EppDomain extends EppAbstract
             'name' => $domain,
             'authInfo' => $authinfo
         ];
-        $this->xmlQuery = EppDomXML::Info(vars: ['domains' => $domains, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
+        $this->xmlQuery = EppDomXML::_Info(vars: ['domains' => $domains, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server
         if ($this->ExecuteQuery(clTRType: "info-domain", clTRObject: $domain, storage: true)) {
             // reset changes at the bottom
@@ -178,7 +177,7 @@ class EppDomain extends EppAbstract
      * @access   public
      * @return   mixed     server side state (text-string or false)
      */
-    public function state()
+    public function State()
     {
         if ($this->domainVars['status'] !== null) {
             return $this->domainVars['status'];
@@ -194,7 +193,7 @@ class EppDomain extends EppAbstract
      * @param    string  domain name to delete
      * @return   boolean status
      */
-    public function delete($domain = null)
+    public function Delete($domain = null)
     {
         if ($domain === null)
             $domain = $this->domainVars['name'];
@@ -203,7 +202,7 @@ class EppDomain extends EppAbstract
             return false;
         }
         // fetch xml template
-        $this->xmlQuery = EppDomXML::Delete(vars: ['domain' => $domain, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
+        $this->xmlQuery = EppDomXML::_Delete(vars: ['domain' => $domain, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server
         if ($this->ExecuteQuery(clTRType: "delete-domain", clTRObject: $domain, storage: true)) {
             return $this->domainVars = array_merge($this->domainVars, $this->xmlResult);
@@ -220,7 +219,7 @@ class EppDomain extends EppAbstract
      * @param    $old old value
      * @return   boolean status
      */
-    public function update($operation, $old)
+    public function Update($operation, $old)
     {
         if ($this->domainVars['name'] === "") {
             $this->setError("Operation not allowed, fetch a domain first!");
@@ -228,7 +227,7 @@ class EppDomain extends EppAbstract
         }
         $APT = false;
         foreach ($operation as $action) {
-            $this->xmlQuery = EppDomXML::Update(vars: ['domain' => $this->domainVars, 'old' => $old, 'clTRID' => $this->connection->_clTRID(action: 'set')], what: strtolower($operation));
+            $this->xmlQuery = EppDomXML::_Update(vars: ['domain' => $this->domainVars, 'old' => $old, 'clTRID' => $this->connection->_clTRID(action: 'set')], what: strtolower($operation));
             switch (strtolower($action)) {
                 case 'ns':
                     // query server
@@ -316,7 +315,7 @@ class EppDomain extends EppAbstract
      * @param    string  domain name to restore
      * @return   boolean status
      */
-    public function restore(?string $domain = null)
+    public function Restore(?string $domain = null)
     {
         if ($domain === null)
             $domain = $this->domainVars['name'];
@@ -324,7 +323,7 @@ class EppDomain extends EppAbstract
             $this->setError("Operation not allowed, set a domain name first!");
             return false;
         }
-        $this->xmlQuery = EppDomXML::Restore(vars: ['domain' => $domain, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
+        $this->xmlQuery = EppDomXML::_Restore(vars: ['domain' => $domain, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server
         if ($this->ExecuteQuery(clTRType: "update-domain-restore", clTRObject: $domain, storage: true)) {
             $this->domainVars = array_merge($this->domainVars, $this->xmlResult);
@@ -339,7 +338,7 @@ class EppDomain extends EppAbstract
      * @param    string  operation transfer type
      * @return   boolean status
      */
-    public function transfer(?array $domain, ?string $operation = NULL)
+    public function Transfer(?array $domain, ?string $operation = NULL)
     {
         if ($domain === null)
             $domain = $this->domainVars;

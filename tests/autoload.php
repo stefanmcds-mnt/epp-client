@@ -6,6 +6,18 @@
 
 foreach ($GLOBALS['include'] as $folder) {
     if (is_dir($folder)) {
+        set_include_path($folder);
+        spl_autoload_register(function ($class) use ($folder) {
+            $file = explode('/', str_replace('\\', '/', $class . '.php'));
+            $file = end($file);
+            if (file_exists($folder . '/' . $file)) {
+                print_r($folder . '/' . $file . "\n");
+                if (!in_array($class, get_declared_classes())) {
+                    require_once $folder . '/' . $file;
+                }
+            }
+        });
+        /*
         $handle = opendir($folder);
         while ($file = readdir($handle)) {
             if ($file != "." && $file != "..") {
@@ -13,12 +25,15 @@ foreach ($GLOBALS['include'] as $folder) {
                 $tmp = end($tmp);
                 if ($tmp === "php") {
                     #include(__DIR__ . "/" . $classi . "/" . $file);
-                    require_once($folder . "/" . $file);
+                    if (is_file($folder . '/' . $file)) {
+                        require_once($folder . "/" . $file);
+                    }
                 }
             }
         }
+        */
     } else {
-        require_once($folder);
+        require_once $folder;
     }
 }
 /*
