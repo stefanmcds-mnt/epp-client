@@ -22,6 +22,9 @@ trait EppDomXML
     // Set Registry
     static public ?array $registro;
 
+    // Use SECDNS
+    static public ?bool $usednssec = false;
+
     /**
      * Initialize
      */
@@ -39,9 +42,25 @@ trait EppDomXML
     static public function _setRegistry($registry)
     {
         self::$registro = $registry;
-        //print_r("EppDomXML Registro:\n");
-        //print_r(self::$registro);
+        if (self::$usednssec === false) {
+            foreach (self::$registro['extURI'] as $key => $value) {
+                if (stristr($value, 'secDNS')) {
+                    unset(self::$registro['extURI'][$key]);
+                }
+            }
+        }
         return self::$registro;
+    }
+
+    /**
+     * Configure Registro
+     *
+     * @return void
+     */
+    static public function _setDNSSEC($secdns)
+    {
+        self::$usednssec = $secdns;
+        return self::$usednssec;
     }
 
     /**
@@ -444,6 +463,22 @@ trait EppDomXML
             }
         }
         $finalElement['command']['create']['domain:create']['domain:ns'] = $arraydns;
+        if (self::$usednssec === true) {
+            // Add DNSSEC information to the command.
+            $finalElement['command']['create']['extension'] = [
+                'secDNS:create' => [
+                    '@attributes' => (isset(self::$registro['domain']['secDNS']))
+                        ? self::$registro['domain']['secDNS']
+                        : ['xmlns:secDNS' => "urn:ietf:params:xml:ns:secDNS-1.1"],
+                    'secDNS:dsData' => [
+                        'secDNS:keyTag' => $vars['secDNS']['keyTag'],
+                        'secDNS:alg' => $vars['secDNS']['alg'],
+                        'secDNS:digestType' => $vars['secDNS']['digestType'],
+                        'secDNS:digest' => $vars['secDNS']['digest']
+                    ]
+                ]
+            ];
+        }
         return $finalElement;
     }
     /**
@@ -854,6 +889,52 @@ trait EppDomXML
             }
             $finalElement['command']['command']['update']['domain:update']['domain:add']['domain:ns'] = $upd;
             $finalElement['command']['command']['update']['domain:update']['domain:rem']['domain:ns'] = $rem;
+            if (self::$usednssec === true) {
+                if ($vars['old']['secDNS'] === 'all') {
+                    $finalElement['command']['command']['update']['extension'] = [
+                        'secDNS:update' => [
+                            '@attributes' => (isset(self::$registro['domain']['secDNS']))
+                                ? self::$registro['domain']['secDNS']
+                                : ['xmlns:secDNS' => "urn:ietf:params:xml:ns:secDNS-1.1"],
+                            'secDNS:rem' => [
+                                'secDNS:all' => 'true'
+                            ],
+                            'secDNS:add' => [
+                                'secDNS:dsData' => [
+                                    'secDNS:keyTag' => $vars['secDNS']['keyTag'],
+                                    'secDNS:alg' => $vars['secDNS']['alg'],
+                                    'secDNS:digestType' => $vars['secDNS']['digestType'],
+                                    'secDNS:digest' => $vars['secDNS']['digest']
+                                ],
+                            ],
+                        ],
+                    ];
+                } else {
+                    $finalElement['command']['command']['update']['extension'] = [
+                        'secDNS:update' => [
+                            '@attributes' => (isset(self::$registro['domain']['secDNS']))
+                                ? self::$registro['domain']['secDNS']
+                                : ['xmlns:secDNS' => "urn:ietf:params:xml:ns:secDNS-1.1"],
+                            'secDNS:rem' => [
+                                'secDNS:dsData' => [
+                                    'secDNS:keyTag' => $vars['old']['secDNS']['keyTag'],
+                                    'secDNS:alg' => $vars['old']['secDNS']['alg'],
+                                    'secDNS:digestType' => $vars['old']['secDNS']['digestType'],
+                                    'secDNS:digest' => $vars['old']['secDNS'['digest']],
+                                ],
+                            ],
+                            'secDNS:add' => [
+                                'secDNS:dsData' => [
+                                    'secDNS:keyTag' => $vars['secDNS']['keyTag'],
+                                    'secDNS:alg' => $vars['secDNS']['alg'],
+                                    'secDNS:digestType' => $vars['secDNS']['digestType'],
+                                    'secDNS:digest' => $vars['secDNS']['digest']
+                                ],
+                            ],
+                        ],
+                    ];
+                }
+            }
         }
         return $finalElement;
     }

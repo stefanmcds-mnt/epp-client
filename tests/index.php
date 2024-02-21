@@ -25,13 +25,14 @@ try {
     $domain->domainVars = array_merge($domain->domainVars, ['name' => 'stedns.it', 'authInfo' => "STE20100201-REG-001"]);
     $domain->Fetch();
     $session->Logout();
-    print_r($domain->xmlQuery);
-    //print_r($domain->xmlResult);
-    print_r($session->registry);
-    print_r($session->sessionVars);
-    print_r($domain->domainVars);
     //print_r($session->xmlResponse['body']);
     //print_r($session->xmlResult);
+    //print_r($domain->xmlQuery);
+    //print_r($domain->xmlResult);
+    print_r($session->registry);
+    //print_r($session->sessionVars);
+    print_r($domain->domainVars);
+    //print_r($domain->xmlResult);
 } catch (Exception $err) {
     print_r(get_class($err));
     print_r("Message: " . $err->getMessage() . "\n");

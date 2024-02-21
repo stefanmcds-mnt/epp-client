@@ -137,10 +137,16 @@ class EppSession extends EppAbstract
                 }
                 $d = explode('-', end($c));
                 if (stristr(reset($d), substr(reset($b), 0, 3)) || in_array(reset($d), ['rgp', 'secDNS'])) {
-                    $registry[reset($b)][reset($d)] = [
-                        'xmlns:' . reset($d) => $ext,
-                        'xsi:schemaLocation' => $ext . ' ' . end($c) . '.xsd',
-                    ];
+                    if (reset($d) === 'secDNS') {
+                        $registry[reset($b)][reset($d)] = [
+                            'xmlns:' . reset($d) => $ext,
+                        ];
+                    } else {
+                        $registry[reset($b)][reset($d)] = [
+                            'xmlns:' . reset($d) => $ext,
+                            'xsi:schemaLocation' => $ext . ' ' . end($c) . '.xsd',
+                        ];
+                    }
                 }
             }
         }
@@ -160,6 +166,9 @@ class EppSession extends EppAbstract
         // query server (will return false)
         $this->ExecuteQuery(clTRType: "hello", storage: true);
         // Set de EppDomXML $registro var
+        if ($this->dnssec === true) {
+            EppDomXML::_setDNSSEC($this->dnssec);
+        }
         EppDomXML::_setRegistry($this->setRegistry());
         $this->sessionVars = array_merge($this->sessionVars, $this->xmlResult);
         // this is the only query with no result code
@@ -184,7 +193,7 @@ class EppSession extends EppAbstract
         // query server
         //if ($this->ExecuteQuery(clTRType: $which, clTRObject: $which, storage: true)) {
         // see if we got the expected information
-        //$this->ExecuteQuery(clTRType: $which, clTRObject: $which, storage: true);
+        $this->ExecuteQuery(clTRType: $which, clTRObject: $which, storage: true);
         if (isset($this->xmlResult['creditMsgData'])) {
             $this->sessionVars['credit'] = $this->xmlResult['creditMsgData'];
         }

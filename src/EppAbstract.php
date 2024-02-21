@@ -120,6 +120,14 @@ abstract class EppAbstract
     public mixed $xmlResponse = null; /* the xmlResopnse of $xmlQuery */
 
     /**
+     * Use SECDNS
+     *      *
+     * @var bool|null
+     */
+    public ?bool $dnssec = false;
+
+
+    /**
      * Constructor
      *
      * @param object|null $client
@@ -239,7 +247,7 @@ abstract class EppAbstract
                 $ext = ['extepp', 'extdom', 'extcon'];
             }
         }
-        //print_r($element . "\n" . $xml);
+        print_r($element . "\n" . $xml);
         // parse into array Epp XML response
         if ($res = XML2Array::createArray($xml)) {
             // set the object properties with the values from the xml response
@@ -625,6 +633,19 @@ abstract class EppAbstract
                         }
                         $res[$element . ':nsToValidate'] = $bb;
                         unset($res['extension'][$ext . ':infNsToValidateData']);
+                    }
+                    // SecDNS
+                    if (isset($res['extension']['secDNS:infData'])) {
+                        $res['secDNS'] = $res['extension']['secDNS:infData']['secDNS:dsData'];
+                        unset($res['extension']['secDNS:infData']);
+                    }
+                    if (isset($res['extension']['extsecDNS:infDsOrKeyToValidateData'])) {
+                        if (isset($res['extension']['extsecDNS:infDsOrKeyToValidateData']['dsOrKeysToValidate'])) {
+                            $res['secDNS']['dsOrKeysToValidate'] = $res['extension']['extsecDNS:infDsOrKeyToValidateData']['dsOrKeysToValidate']['secDNS:dsData'];
+                        } else {
+                            $res['secDNS']['rem'] = $res['extension']['extsecDNS:infDsOrKeyToValidateData'];
+                        }
+                        unset($res['extension']['extsecDNS:infDsOrKeyToValidateData']);
                     }
                 }
                 unset($res['extension']);
