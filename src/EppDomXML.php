@@ -194,8 +194,8 @@ trait EppDomXML
         if (isset($vars['contact'])) {
             $finalElement['command']['check'] = [
                 'contact:check' => [
-                    '@attributes' => (isset(self::$registro['contact']))
-                        ? self::$registro['contact']
+                    '@attributes' => (isset(self::$registro['contact']['schema']))
+                        ? self::$registro['contact']['schema']
                         : [
                             'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
                         ],
@@ -206,7 +206,7 @@ trait EppDomXML
         if (isset($vars['domain'])) {
             $finalElement['command']['check'] = [
                 'domain:check' => [
-                    '@attributes' => (isset(self::$registro['domain']))
+                    '@attributes' => (isset(self::$registro['domain']['schema']))
                         ? self::$registro['domain']
                         : [
                             'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
@@ -301,7 +301,7 @@ trait EppDomXML
                 'create' => [
                     'contact:create' => [
                         '@attributes' => (isset(self::$registro['contact']))
-                            ? self::$registro['contact']
+                            ? self::$registro['contact']['schema']
                             : [
                                 'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
                                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
@@ -340,8 +340,8 @@ trait EppDomXML
                 ],
                 'extension' => [
                     'extcon:create' => [
-                        '@attributes' => (isset(self::$registro['extcon']))
-                            ? self::$registro['extcon']
+                        '@attributes' => (isset(self::$registro['contact']['extcon']))
+                            ? self::$registro['contact']['extcon']
                             : [
                                 'xmlns:extcon' => 'http://www.nic.it/ITNIC-EPP/extcon-1.0',
                                 'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extcon-1.0 extcon-1.0.xsd',
@@ -381,8 +381,8 @@ trait EppDomXML
             'command' => [
                 'create' => [
                     'domain:create' => [
-                        '@attributes' => (isset(self::$registro['domain']))
-                            ? self::$registro['domain']
+                        '@attributes' => (isset(self::$registro['domain']['schema']))
+                            ? self::$registro['domain']['schema']
                             : [
                                 'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
                                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
@@ -466,8 +466,8 @@ trait EppDomXML
                         'op' => 'cancel'
                     ],
                     'domain:transfer' => [
-                        '@attributes' => (isset(self::$registro['domain']))
-                            ? self::$registro['domain']
+                        '@attributes' => (isset(self::$registro['domain']['schema']))
+                            ? self::$registro['domain']['schema']
                             : [
                                 'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
                                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
@@ -517,14 +517,8 @@ trait EppDomXML
             'command' => [
                 'delete' => [
                     'contact:delete' => [
-                        /*
-                        '@attributes' => [
-                            'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
-                            'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
-                        ],
-                        */
-                        '@attributes' => (isset(self::$registro['contact']))
-                            ? self::$registro['contact']
+                        '@attributes' => (isset(self::$registro['contact']['schema']))
+                            ? self::$registro['contact']['schema']
                             : [
                                 'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
                                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
@@ -554,8 +548,8 @@ trait EppDomXML
             'command' => [
                 'delete' => [
                     'domain:delete' => [
-                        '@attributes' => (isset(self::$registro['domain']))
-                            ? self::$registro['domain']
+                        '@attributes' => (isset(self::$registro['domain']['schema']))
+                            ? self::$registro['domain']['schema']
                             : [
                                 'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
                                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
@@ -591,8 +585,8 @@ trait EppDomXML
         if (isset($vars['contact'])) {
             $finalElement['command']['info'] = [
                 'contact:info' => [
-                    '@attributes' => (isset(self::$registro['contact']))
-                        ? self::$registro['contact']
+                    '@attributes' => (isset(self::$registro['contact']['schema']))
+                        ? self::$registro['contact']['schema']
                         : [
                             'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
                             'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
@@ -604,8 +598,8 @@ trait EppDomXML
         if (isset($vars['domain'])) {
             $finalElement['command']['info'] = [
                 'domain:info' => [
-                    '@attributes' => (isset(self::$registro['domain']))
-                        ? self::$registro['domain']
+                    '@attributes' => (isset(self::$registro['domain']['schema']))
+                        ? self::$registro['domain']['schema']
                         : [
                             'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
                             'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd'
@@ -628,13 +622,12 @@ trait EppDomXML
                     'extdom:infContacts' => [
                         '@attributes' => [
                             'op' => (isset($vars['infContacts'])) ? $vars['infContacts'] : 'all',
-                            self::$registro['domain']
-                            /*
-                            (isset(self::$registro['domain']))
-                                ? self::$registro['domain']
-                                : 'xmlns:extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0',
-                            'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd'
-                            */
+                            '@value' => (isset(self::$registro['domain']['extdom']))
+                                ? self::$registro['domain']['extdom']
+                                : [
+                                    'xmlns:extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0',
+                                    'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd'
+                                ]
                         ]
                     ],
                 ];
@@ -659,8 +652,8 @@ trait EppDomXML
             'command' => [
                 'update' => [
                     'domain:update' => [
-                        '@attributes' => (isset(self::$registro['domain']))
-                            ? self::$registro['domain']
+                        '@attributes' => (isset(self::$registro['domain']['schema']))
+                            ? self::$registro['domain']['schema']
                             : [
                                 'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
                                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
@@ -670,8 +663,8 @@ trait EppDomXML
                     ],
                 ],
                 'extension' => [
-                    'rgp:update' => (isset(self::$registro['rgp']))
-                        ? self::$registro['rgp']
+                    'rgp:update' => (isset(self::$registro['domain']['rgp']))
+                        ? self::$registro['domain']['rgp']
                         : [
                             'xmlns:rgp' => 'urn:ietf:params:xml:ns:rgp-1.0',
                             'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:rgp-1.0 rgp-1.0.xsd',
@@ -708,8 +701,8 @@ trait EppDomXML
                             'op' => strtolower($motive),
                         ],
                         'domain:transfer' => [
-                            '@attributes' => (isset(self::$registro['domain']))
-                                ? self::$registro['domain']
+                            '@attributes' => (isset(self::$registro['domain']['schema']))
+                                ? self::$registro['domain']['schema']
                                 : [
                                     'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
                                     'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
@@ -729,8 +722,8 @@ trait EppDomXML
                 ];
                 $finalElement['command']['extension'] = [
                     'extdom:trade' => [
-                        '@attributes' => (isset(self::$registro['extdom']))
-                            ? self::$registro['extdom']
+                        '@attributes' => (isset(self::$registro['domain']['extdom']))
+                            ? self::$registro['domain']['extdom']
                             : [
                                 'xmlns:extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0',
                                 'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd',
@@ -785,8 +778,8 @@ trait EppDomXML
             'command' => [
                 'update' => [
                     'domain:update' => [
-                        '@attributes' => (isset(self::$registro['domain']))
-                            ? self::$registro['domain']
+                        '@attributes' => (isset(self::$registro['domain']['schema']))
+                            ? self::$registro['domain']['schema']
                             : [
                                 'xmlns:domain' => 'urn:ietf:params:xml:ns:domain-1.0',
                                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd',
@@ -880,8 +873,8 @@ trait EppDomXML
                 'update' => [
                     'contact:update' => [
                         [
-                            'attributes' => (isset(self::$registro['contact']))
-                                ? self::$registro['contact']
+                            'attributes' => (isset(self::$registro['contact']['schema']))
+                                ? self::$registro['contact']['schema']
                                 : [
                                     'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
                                     'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
@@ -902,8 +895,8 @@ trait EppDomXML
                     ],
                     'extension' => [
                         'extcon:update' => [
-                            'attributes' => (isset(self::$registro['extcon']))
-                                ?  self::$registro['extcon']
+                            'attributes' => (isset(self::$registro['contact']['extcon']))
+                                ?  self::$registro['contact']['extcon']
                                 : [
                                     'xmlns:extcon' => 'http://www.nic.it/ITNIC-EPP/extcon-1.0',
                                     'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extcon-1.0 extcon-1.0.xsd',

@@ -63,6 +63,92 @@ class EppSession extends EppAbstract
     }
 
     /**
+     * Set Registry
+     * 
+     * set the Registry object
+     * 
+     * return an array such us
+     * 
+     *  [
+     *      'svID' => NIC-IT EPP Registry,
+     *      'scDate' => 2013-02-22,
+     *      'version' => 1.0,
+     *      'lang' => [
+     *          0 => 'en',
+     *          1 => 'it',
+     *      ],
+     *      'objURI' => [
+     *          0 => urn:ietf:params:xml:ns:contact-1.0
+     *          1 => urn:ietf:params:xml:ns:domain-1.0
+     *      ]
+     *      'extURI' => [
+     *          0 => http://www.nic.it/ITNIC-EPP/extepp-2.0
+     *          1 => http://www.nic.it/ITNIC-EPP/extcon-1.0
+     *          2 => http://www.nic.it/ITNIC-EPP/extdom-2.0
+     *          3 => urn:ietf:params:xml:ns:rgp-1.0
+     *      ],
+     *      'contact' =>[
+     *         'schema' => [
+     *             'xmlns:contact' => urn:ietf:params:xml:ns:contact-1.0
+     *             'xsi:schemaLocation' => urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd
+     *         ],
+     *         'extcon' => [
+     *            'xmlns:extcon' => http://www.nic.it/ITNIC-EPP/extcon-1.0
+     *             'xsi:schemaLocation' => http://www.nic.it/ITNIC-EPP/extcon-1.0 extcon-1.0.xsd
+     *         ],
+     *         'rgp' => [
+     *             'xmlns:rgp' => urn:ietf:params:xml:ns:rgp-1.0
+     *             'xsi:schemaLocation' => urn:ietf:params:xml:ns:rgp-1.0 rgp-1.0.xsd
+     *         ],
+     *      ],
+     *      'domain' => [
+     *          'schema' => [
+     *          'xmlns:domain' => urn:ietf:params:xml:ns:domain-1.0
+     *          'xsi:schemaLocation' => urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd
+     *      ],
+     *      'extdom' => [
+     *          'xmlns:extdom' => http://www.nic.it/ITNIC-EPP/extdom-2.0
+     *          'xsi:schemaLocation' => http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd
+     *      ],
+     *      'rgp' => [
+     *          'xmlns:rgp' => urn:ietf:params:xml:ns:rgp-1.0
+     *          'xsi:schemaLocation' => urn:ietf:params:xml:ns:rgp-1.0 rgp-1.0.xsd
+     *      ]
+     * ]
+     * 
+     * @param array|null $registry
+     * @return mixed
+     */
+    public function setRegistry(?array $registry = [])
+    {
+        $this->registry = $registry;
+        foreach ($this->registry['objURI'] as $objURI) {
+            $a = explode(':', $objURI);
+            $b = explode('-', end($a));
+            $this->registry[reset($b)] = [
+                'xmlns:' . reset($b) => $objURI,
+                'xsi:schemaLocation' => $objURI . ' ' . end($a) . '.xsd',
+            ];
+            foreach ($this->registry['extURI'] as $extURI) {
+                if (stristr($extURI, 'http')) {
+                    $c = explode('/', $extURI);
+                } else if (stristr($extURI, ':')) {
+                    $c = explode(':', $extURI);
+                }
+                $d = explode('-', end($c));
+                if (stristr(reset($d), substr(reset($b), 0, 3)) || in_array(reset($d), ['rgp'])) {
+                    $this->registry[reset($b)][reset($d)] = [
+                        'xmlns:' . reset($d) => $extURI,
+                        'xsi:schemaLocation' => $extURI . ' ' . end($c) . '.xsd',
+                    ];
+                }
+            }
+        }
+        unset($this->registry['greeting']);
+        return $this->registry;
+    }
+
+    /**
      * session start
      *
      * @access public
@@ -73,9 +159,10 @@ class EppSession extends EppAbstract
         $this->xmlQuery = EppDomXML::_Hello();
         // query server (will return false)
         $this->ExecuteQuery(clTRType: "hello", storage: true);
-        print_r($this->xmlResult);
-        $this->setRegistry($this->xmlResult);
-        EppDomXML::_setRegistry($this->registry);
+        //$this->setRegistry($this->xmlResult);
+        //EppDomXML::_setRegistry($this->registry);
+        // Set de EppDomXML $registro var
+        EppDomXML::_setRegistry($this->setRegistry($this->xmlResult));
         $this->sessionVars = array_merge($this->sessionVars, $this->xmlResult);
         // this is the only query with no result code
         /*

@@ -210,43 +210,6 @@ abstract class EppAbstract
     }
 
     /**
-     * Set Registry
-     *
-     * @param array|null $registry
-     * @return mixed
-     */
-    public function setRegistry(?array $registry = [])
-    {
-
-        //$this->registry = (null !== $registry) ? array_merge($this->registry, $registry) : $this->registry;
-        $this->registry = $registry;
-        foreach ($this->registry['objURI'] as $item) {
-            $a = explode(':', $item);
-            $b = explode('-', end($a));
-            $this->registry[reset($b)] = [
-                'xmlns:' . reset($b) => $item,
-                'xsi:schemaLocation' => $item . ' ' . end($a) . '.xsd',
-            ];
-        }
-        foreach ($this->registry['extURI'] as $item) {
-            if (stristr($item, 'http')) {
-                $a = explode('/', $item);
-            }
-            if (stristr($item, ':')) {
-                $a = explode(':', $item);
-            }
-            $b = explode('-', end($a));
-            $this->registry[reset($b)] = [
-                'xmlns:' . reset($b) => $item,
-                'xsi:schemaLocation' => $item . ' ' . end($a) . '.xsd',
-            ];
-        }
-        unset($this->registry['greeting']);
-        return $this->registry;
-    }
-
-
-    /**
      * Parse $this->xmlQuery result
      * 
      * XML2Array class transform DOMXML Object into an array
@@ -311,14 +274,6 @@ abstract class EppAbstract
                 ];
             }
 
-            // Greeting only on Hello Command
-            if (isset($res['greeting'])) {
-                unset($res['greeting']['dcp']);
-                $res = array_merge($res, $res['greeting'], $res['greeting']['svcMenu'], $res['greeting']['svcMenu']['svcExtension']);
-                unset($res['greeting']);
-                unset($res['svcMenu']);
-                unset($res['svcExtension']);
-            }
 
             // resData Elements
             if (isset($res['resData'])) {
