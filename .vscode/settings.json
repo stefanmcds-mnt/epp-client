@@ -1,7 +1,0 @@
-{
-    "gitProjectManager.displayProjectPath": true,
-    "gitProjectManager.storeRepositoriesBetweenSessions": true,
-    "gitProjectManager.supportsMercurial": true,
-    "gitProjectManager.supportsSVN": true,
-    "gitProjectManager.warnIfFolderNotFound": true
-}
