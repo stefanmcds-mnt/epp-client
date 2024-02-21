@@ -29,7 +29,7 @@ try {
     //print_r($domain->xmlResult);
     //print_r($session->xmlQuery);
     print_r($session->sessionVars);
-    //print_r($domain->domainVars);
+    print_r($domain->domainVars);
     //print_r($session->xmlResponse['body']);
     //print_r($session->xmlResult);
 } catch (Exception $err) {

@@ -622,15 +622,17 @@ trait EppDomXML
                     'extdom:infContacts' => [
                         '@attributes' => [
                             'op' => (isset($vars['infContacts'])) ? $vars['infContacts'] : 'all',
-                            '@value' => (isset(self::$registro['domain']['extdom']))
-                                ? self::$registro['domain']['extdom']
-                                : [
-                                    'xmlns:extdom' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0',
-                                    'xsi:schemaLocation' => 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd'
-                                ]
                         ]
                     ],
                 ];
+                if (isset(self::$registro['domain']['extdom'])) {
+                    foreach (self::$registro['domain']['extdom'] as $key => $value) {
+                        $finalElement['command']['extension']['extdom:infContacts']['@attributes'][$key] = $value;
+                    }
+                } else {
+                    $finalElement['command']['extension']['extdom:infContacts']['@attributes']['xmlns:extdom'] = 'http://www.nic.it/ITNIC-EPP/extdom-2.0';
+                    $finalElement['command']['extension']['extdom:infContacts']['@attributes']['xsi:schemaLocation'] = 'http://www.nic.it/ITNIC-EPP/extdom-2.0 extdom-2.0.xsd';
+                }
             }
         }
         return self::_XML($finalElement);

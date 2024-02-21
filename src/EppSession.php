@@ -121,30 +121,31 @@ class EppSession extends EppAbstract
      */
     public function setRegistry(?array $registry = [])
     {
-        $this->registry = $registry;
-        foreach ($this->registry['objURI'] as $objURI) {
-            $a = explode(':', $objURI);
+        foreach ($registry['objURI'] as $obj) {
+            $a = explode(':', $obj);
             $b = explode('-', end($a));
-            $this->registry[reset($b)] = [
-                'xmlns:' . reset($b) => $objURI,
-                'xsi:schemaLocation' => $objURI . ' ' . end($a) . '.xsd',
+            $registry[reset($b)]['schema'] = [
+                'xmlns:' . reset($b) => $obj,
+                'xsi:schemaLocation' => $obj . ' ' . end($a) . '.xsd',
             ];
-            foreach ($this->registry['extURI'] as $extURI) {
-                if (stristr($extURI, 'http')) {
-                    $c = explode('/', $extURI);
-                } else if (stristr($extURI, ':')) {
-                    $c = explode(':', $extURI);
+            foreach ($registry['extURI'] as $ext) {
+                if (stristr($ext, 'http')) {
+                    $c = explode('/', str_replace('//', '/', $ext));
+                } else if (stristr($ext, ':')) {
+                    $c = explode(':', $ext);
                 }
                 $d = explode('-', end($c));
-                if (stristr(reset($d), substr(reset($b), 0, 3)) || in_array(reset($d), ['rgp'])) {
-                    $this->registry[reset($b)][reset($d)] = [
-                        'xmlns:' . reset($d) => $extURI,
-                        'xsi:schemaLocation' => $extURI . ' ' . end($c) . '.xsd',
+                if (stristr(reset($d), substr(reset($b), 0, 3)) || reset($d) === 'rgp') {
+                    $registry[reset($b)][reset($d)] = [
+                        'xmlns:' . reset($d) => $ext,
+                        'xsi:schemaLocation' => $ext . ' ' . end($c) . '.xsd',
                     ];
                 }
             }
         }
-        unset($this->registry['greeting']);
+        unset($registry['greeting']);
+        unset($this->xmlResult['greeting']);
+        $this->registry = $registry;
         return $this->registry;
     }
 
@@ -159,7 +160,6 @@ class EppSession extends EppAbstract
         $this->xmlQuery = EppDomXML::_Hello();
         // query server (will return false)
         $this->ExecuteQuery(clTRType: "hello", storage: true);
-        print_r($this->xmlResult);
         // Set de EppDomXML $registro var
         EppDomXML::_setRegistry($this->setRegistry($this->xmlResult));
         $this->sessionVars = array_merge($this->sessionVars, $this->xmlResult);
@@ -180,20 +180,25 @@ class EppSession extends EppAbstract
      * @param string login/logout
      * @return mix status (false or EPP status code)
      */
-    private function loginout($which)
+    private function LoginOut($which)
     {
         // query server
         //if ($this->ExecuteQuery(clTRType: $which, clTRObject: $which, storage: true)) {
         // see if we got the expected information
-        $this->ExecuteQuery(clTRType: $which, clTRObject: $which, storage: true);
+        //$this->ExecuteQuery(clTRType: $which, clTRObject: $which, storage: true);
         if (isset($this->xmlResult['creditMsgData'])) {
             $this->sessionVars['credit'] = $this->xmlResult['creditMsgData'];
         }
         $this->sessionVars = array_merge($this->sessionVars, $this->xmlResult);
+        /*
+        if (isset($this->xmlResult['result']['msg']) && stristr(strtolower($this->xmlResult['result']['msg']), 'error')) {
+            $this->logout();
+            return false;
+        }
+        */
         return true;
         //} else {
-        //    $this->logout();
-        //    return false;
+        //    throw new EppException('Unable to execute  ' . $which . ' command');
         //}
     }
 
@@ -209,21 +214,10 @@ class EppSession extends EppAbstract
         $this->sessionVars['newpw'] = (null !== $newPW) ? $newPW : null;
         $this->xmlQuery = EppDomXML::_Login($this->sessionVars);
         if (!empty($this->xmlQuery)) {
-            return $this->loginout("login");
+            return $this->LoginOut("login");
         } else {
             return false;
         }
-    }
-
-    /**
-     * session keepalive
-     *
-     * @access public
-     * @return boolean status
-     */
-    public function KeepAlive()
-    {
-        return $this->hello();
     }
 
     /**
@@ -235,7 +229,18 @@ class EppSession extends EppAbstract
     public function Logout()
     {
         $this->xmlQuery = EppDomXML::_Logout();
-        return $this->loginout("logout");
+        return $this->LoginOut("logout");
+    }
+
+    /**
+     * session keepalive
+     *
+     * @access public
+     * @return boolean status
+     */
+    public function KeepAlive()
+    {
+        return $this->Hello();
     }
 
     /**
