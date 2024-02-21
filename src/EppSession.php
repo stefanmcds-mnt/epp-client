@@ -13,7 +13,9 @@
  * - poll
  * - showCredit
  *
- *
+ * by setting $dnssec to true the script will use dnssec validation on the glue records.
+ * 
+ * 
  * @category EppClient
  * @package EppSession
  * @author STEF@N MCDS S.a.s. <info@stefan-mcds.it>
@@ -156,7 +158,7 @@ class EppSession extends EppAbstract
 
     /**
      * session start
-     *
+     * 
      * @access public
      * @return boolean status
      */

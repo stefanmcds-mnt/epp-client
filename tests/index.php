@@ -18,6 +18,7 @@ $contact = Epp::goCONTACT($connection, true);
 $domain = Epp::goDOMAIN($connection, true);
 
 try {
+    //$session->dnssec = true; // Registrar use secDNS
     $session->Hello();
     $session->Login();
     //$session->Poll();

@@ -25,7 +25,7 @@ use EppClient\EppDomain;
 class Epp
 {
 
-    public ?array $LogDebug = [
+    static public ?array $LogDebug = [
         'LOG_EMERG' => 0, /* system is unusable */
         'LOG_ALERT' => 1, /* action must be taken immediately */
         'LOG_CRIT' => 2, /* critical conditions */
@@ -98,8 +98,9 @@ class Epp
         ?bool $tostore = true
     ) {
         $session = new EppSession(connection: $connection, tostore: $tostore);
-        //$session->debug = $this->LogDebug['LOG_DEBUG'];
-        //$session->debug = self::$LogDebug['LOG_DEBUG'];
+        $session->debug = self::$LogDebug['LOG_DEBUG'];
+        // uncomment if Epp use secDNS
+        //$session->dnssec = true;
         return $session;
     }
 
@@ -115,8 +116,7 @@ class Epp
         ?bool $tostore = true
     ) {
         $contact = new EppContact(connection: $connection, tostore: $tostore);
-        //$contact->debug = $this->LogDebug['LOG_DEBUG'];
-        //$contact->debug = self::$LogDebug['LOG_DEBUG'];
+        $contact->debug = self::$LogDebug['LOG_DEBUG'];
         return $contact;
     }
 
@@ -132,8 +132,7 @@ class Epp
         ?bool $tostore = true
     ) {
         $domain = new EppDomain(connection: $connection, tostore: $tostore);
-        //$domain->debug = $this->LogDebug['LOG_DEBUG'];
-        //$domain->debug = self::$LogDebug['LOG_DEBUG'];
+        $domain->debug = self::$LogDebug['LOG_DEBUG'];
         return $domain;
     }
 }
