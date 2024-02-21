@@ -248,6 +248,15 @@ abstract class EppAbstract
             } else {
                 $res = $res['epp'];
             }
+
+            // Greeting only on Hello Command
+            if (isset($res['greeting'])) {
+                unset($res['greeting']['dcp']);
+                $res = array_merge($res, $res['greeting'], $res['greeting']['svcMenu'], $res['greeting']['svcMenu']['svcExtension']);
+                unset($res['svcMenu']);
+                unset($res['svcExtension']);
+            }
+
             // The Epp Result Element
             if (isset($res['result'])) {
                 $res['result']['code'] = $res['result']['@attributes']['code'];
@@ -273,7 +282,6 @@ abstract class EppAbstract
                     'count' => $res['msgQ']['@attributes']['count'],
                 ];
             }
-
 
             // resData Elements
             if (isset($res['resData'])) {
