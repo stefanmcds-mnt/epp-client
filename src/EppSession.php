@@ -119,8 +119,9 @@ class EppSession extends EppAbstract
      * @param array|null $registry
      * @return mixed
      */
-    public function setRegistry(?array $registry = [])
+    public function setRegistry()
     {
+        $registry = $this->registry;
         foreach ($registry['objURI'] as $obj) {
             $a = explode(':', $obj);
             $b = explode('-', end($a));
@@ -135,7 +136,7 @@ class EppSession extends EppAbstract
                     $c = explode(':', $ext);
                 }
                 $d = explode('-', end($c));
-                if (stristr(reset($d), substr(reset($b), 0, 3)) || reset($d) === 'rgp') {
+                if (stristr(reset($d), substr(reset($b), 0, 3)) || in_array(reset($d), ['rgp', 'secDNS'])) {
                     $registry[reset($b)][reset($d)] = [
                         'xmlns:' . reset($d) => $ext,
                         'xsi:schemaLocation' => $ext . ' ' . end($c) . '.xsd',
@@ -143,8 +144,6 @@ class EppSession extends EppAbstract
                 }
             }
         }
-        unset($registry['greeting']);
-        unset($this->xmlResult['greeting']);
         $this->registry = $registry;
         return $this->registry;
     }
@@ -161,7 +160,7 @@ class EppSession extends EppAbstract
         // query server (will return false)
         $this->ExecuteQuery(clTRType: "hello", storage: true);
         // Set de EppDomXML $registro var
-        EppDomXML::_setRegistry($this->setRegistry($this->xmlResult));
+        EppDomXML::_setRegistry($this->setRegistry());
         $this->sessionVars = array_merge($this->sessionVars, $this->xmlResult);
         // this is the only query with no result code
         /*

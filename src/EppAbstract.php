@@ -251,10 +251,12 @@ abstract class EppAbstract
 
             // Greeting only on Hello Command
             if (isset($res['greeting'])) {
-                unset($res['greeting']['dcp']);
-                $res = array_merge($res, $res['greeting'], $res['greeting']['svcMenu'], $res['greeting']['svcMenu']['svcExtension']);
-                unset($res['svcMenu']);
-                unset($res['svcExtension']);
+                $this->registry = array_merge($res['greeting'], $res['greeting']['svcMenu'], $res['greeting']['svcMenu']['svcExtension']);
+                unset($this->registry['greeting']['dcp']);
+                unset($this->registry['dcp']);
+                unset($this->registry['svcMenu']);
+                unset($this->registry['svcExtension']);
+                unset($res['greeting']);
             }
 
             // The Epp Result Element

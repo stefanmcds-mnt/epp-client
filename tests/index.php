@@ -25,9 +25,9 @@ try {
     $domain->domainVars = array_merge($domain->domainVars, ['name' => 'stedns.it', 'authInfo' => "STE20100201-REG-001"]);
     $domain->Fetch();
     $session->Logout();
-    //print_r($domain->xmlQuery);
+    print_r($domain->xmlQuery);
     //print_r($domain->xmlResult);
-    //print_r($session->xmlQuery);
+    print_r($session->registry);
     print_r($session->sessionVars);
     print_r($domain->domainVars);
     //print_r($session->xmlResponse['body']);
