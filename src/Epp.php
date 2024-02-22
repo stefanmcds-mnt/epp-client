@@ -7,8 +7,20 @@
  * 
  * The constructor search in exist 
  * 
+ * Epp commands are distinguished into three categories
+ * - session command (hello,login,logout)
+ * - create/update command on contact and domain object
+ * - server command that interacts without any update action on contact and domain object such as check,info,poll
+ *   
+ * So that above command are stored into this Class
+ * - EppSession all command session and server not for Contact and domain object
+ * - EppContact all command for Contact object 
+ * - EppDomain all command for Domain Object
+ * 
+ * EppConnection are the connection to Epp Server and use Curl or Sock protocol
+ * 
  *
- * @category IT EPP Client
+ * @category EPPClient
  * @package Epp
  * @author STEF@N MCDS S.a.s. <info@stefan-mcds.it>
  * @license http://opensource.org/licenses/bsd-license.php New BSD License
@@ -50,18 +62,19 @@ class Epp
      * Class Constructor
      *
      * - $config:
-     * array/object [
-     *  'server'=>'',      // epp server
-     *  'port'=>'',        // port connect to can be null
-     *  'username',        // username connect to server es registrar
-     *  'password',        // password
-     *  'clTRIDprefix',    // the clTRID prefix registrar sigle
-     *  'handleprefix',    // the handle/id prefix for create contact id
-     *  'timezone',        // the timezone of epp server
-     *  'lang',            // the language used by epp server can be null default en
-     *  'debugfile',       // the debugfile can be null
-     *  'certificatefile', // the certificate file of epp server can be null
-     *  'interface'        // the interface can be null
+     *  [
+     *  'server'=>'',          // epp server
+     *  'port'=>'',            // port connect to can be null
+     *  'username'=>'',        // username connect to server es registrar
+     *  'password'=>'',        // password
+     *  'clTRIDprefix'=>'',    // the clTRID prefix registrar sigle
+     *  'handleprefix'=>'',    // the handle/id prefix for create contact id
+     *  'timezone'=>'',        // the timezone of epp server
+     *  'lang'=>'',            // the language used by epp server can be null default en
+     *  'debugfile'=>'',       // the debugfile can be null
+     *  'certificatefile'=>'', // the certificate file of epp server can be null
+     *  'interface'=>''        // the interface can be null
+     *  'secdns'=>true/false   // if the registrar use secDNS
      * ]
      * 
      * @param mixed|null $config
@@ -79,10 +92,7 @@ class Epp
      */
     public static function goCLIENT(?array $config = null)
     {
-        //EppConnection::Protocol(action: "set", protocol: "curl");
-        //self::$client = new EppConnection(EPPCfg: $config);
-        //$this->connection = new EppConnection($config);
-        //return $this->connection;
+        // pass $config as array
         return new EppConnection(...$config);
     }
 

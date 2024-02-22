@@ -7,13 +7,26 @@
  * 
  * $vars must be an multilevel array of epp command
  * 
+ * Every XML request to Epp server contains
+ * - intital standard element
+ *   - <?xml version="" encoding="UTF-8" standalone="no">
+ *   - <epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
+ * - an element can be:
+ *   - <hello> 
+ *   - <command>
+ *     - one or more operation element
+ *     - <extension> optionally element
+ *     - <clTRID> element
+ * - final standard element
+ *   - </epp>
+ * 
  * @package EPPClient
  * @author STEF@N MCDS S.a.s. <info@stefan-mcds.it>
  * @license http://opensource.org/licenses/bsd-license.php New BSD License
  *
  */
 
-namespace EppClient;
+namespace EppClient\Traits;
 
 use Utilita\Array2XML;
 

@@ -33,6 +33,7 @@ namespace EppClient;
 
 use EppClient\EppAbstract;
 use EppClient\EppConnection;
+use EppClient\Traits\EppDomXML;
 use Algo26\IdnaConvert\ToIdn;
 
 class EppDomain extends EppAbstract

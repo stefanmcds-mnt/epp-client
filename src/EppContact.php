@@ -25,6 +25,7 @@ namespace EppClient;
 
 use EppClient\EppAbstract;
 use EppClient\EppConnection;
+use EppClient\Traits\EppDomXML;
 
 class EppContact extends EppAbstract
 {

@@ -28,6 +28,7 @@ namespace EppClient;
 use EppClient\EppAbstract;
 use EppClient\EppConnection;
 use EppClient\EppException;
+use EppClient\Traits\EppDomXML;
 
 class EppSession extends EppAbstract
 {
