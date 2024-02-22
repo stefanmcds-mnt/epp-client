@@ -14,12 +14,13 @@ namespace EppClient;
 
 use EppClient\EppException;
 use EppClient\Traits\EppDomXML;
+use EppClient\Traits\EppTree;
 use EppClient\Traits\Parse\ResponseTrait;
 use Utilita\XML2Array;
 
 abstract class EppAbstract
 {
-    use EppDomXML, ResponseTrait;
+    use EppDomXML, ResponseTrait, EppTree;
 
     /**
      * Log Level
@@ -194,31 +195,6 @@ abstract class EppAbstract
     }
 
     /**
-     * Tree array or object
-     *
-     * @param mixed $var
-     * @return array
-     */
-    private function tree(mixed $var)
-    {
-        if (is_object($var)) {
-            $var = json_decode(json_encode($var), TRUE);
-        }
-        $array = [];
-        foreach ($var as $key => $value) {
-            if (is_array($value) && is_object($value)) {
-                $this->tree($value);
-            }
-            if (stristr($key, ':')) {
-                $key = explode(':', $key);
-                $key = end($key);
-            }
-            $array[$key] = $value;
-        }
-        return $array;
-    }
-
-    /**
      * Parse $this->xmlQuery result
      * 
      * XML2Array class transform DOMXML Object into an array
@@ -232,7 +208,7 @@ abstract class EppAbstract
     private function ParseResponseBody(?string $xml, ?string $element = null)
     {
         // Set $xmlResult
-        return $this->tree($this->_ParseResponseBody(xml: $xml, element: $element));
+        return $this->_Tree($this->_ParseResponseBody(xml: $xml, element: $element));
     }
 
     /**

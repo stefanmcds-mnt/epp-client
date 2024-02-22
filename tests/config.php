@@ -22,7 +22,8 @@ $config = [
         'cookie_dir' => null,
     ],
     'include' => [
-        //'traits' => "../src/Traits",
+        'traits' => "../src/Traits",
+        'parse' => "../src/Traits/Parse",
         'src' => "../src",         // path source Epp class
         'utilita' => '../../Utilita/src',
     ]
