@@ -34,7 +34,7 @@
 
 namespace EppClient\Traits\Parse;
 
-use EppClient\Traits\Parse\CommandTrait;
+use EppClient\Traits\Parse\commandTrait;
 use EppClient\Traits\Parse\resultTrait;
 use EppClient\Traits\Parse\resDataTrait;
 use EppClient\Traits\Parse\extensionTrait;
