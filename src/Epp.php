@@ -90,7 +90,7 @@ class Epp
      *
      * @return $nic istance
      */
-    public static function goCLIENT(?array $config = null)
+    static public function goCLIENT(?array $config = null)
     {
         // pass $config as array
         return new EppConnection(...$config);
@@ -103,7 +103,7 @@ class Epp
      * @param bool $tostore
      * @return object $session istance
      */
-    public static function goSESSION(
+    static public function goSESSION(
         $connection,
         ?bool $tostore = true
     ) {
@@ -121,7 +121,7 @@ class Epp
      * @param bool $tostore
      * @return object $contact istance
      */
-    public static function goCONTACT(
+    static public function goCONTACT(
         $connection,
         ?bool $tostore = true
     ) {
@@ -137,7 +137,7 @@ class Epp
      * @param bool $tostore
      * @return object $domain istance
      */
-    public static function goDOMAIN(
+    static public function goDOMAIN(
         $connection,
         ?bool $tostore = true
     ) {
