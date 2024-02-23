@@ -1,5 +1,6 @@
 {
     "name": "stefanmcds-mnt/epp-client",
+    "type": "package",
     "description": "Epp Client",
     "version": "1.1",
     "license": "MIT",
