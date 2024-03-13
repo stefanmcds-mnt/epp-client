@@ -57,7 +57,7 @@ class EppConnection
      *  'lang',            // the language used by epp server can be null default en
      *  'debugfile',       // the debugfile can be null
      *  'certificatefile', // the certificate file of epp server can be null
-     *  'interface'        // the interface 
+     *  'interface'        // the interface
      *  'protocol'         // the type of connection to epp server curl|sock
      * ]
      *
@@ -71,7 +71,7 @@ class EppConnection
      *  @param string|null $lang,           epp server language can be null default en
      *  @param string|null $debugfile,      the debugfile can be null
      *  @param string|null $certificatefile epp server certificate file can be null
-     *  @param string|null $interface       epp interface 
+     *  @param string|null $interface       epp interface
      *  @param string|null $protocol        type of connection to epp server curl|sock
      *  @param string|null $cookie_dir      coocker folder
      *
@@ -215,7 +215,7 @@ class EppConnection
      * Send Request to Epp Server
      *
      * @param mixed $data
-     * @return array with response key connect=boolean, status=string, headers=string, body=string, error=string 
+     * @return array with response key connect=boolean, status=string, headers=string, body=string, error=string
      */
     public function sendRequest(mixed $data)
     {

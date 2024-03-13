@@ -78,11 +78,11 @@ class EppContact extends EppAbstract
      * check contact
      *
      * $contact can be null if isset $contactVars['id']
-     * 
+     *
      * @param mixed optional contact to check (set handle id!)
      * @return array|boolean (array epp response or boolean -1 on error)
      */
-    public function check(mixed $contact = null)
+    public function Check(mixed $contact = null)
     {
         if (is_null($contact)) {
             $contact = $this->contactVars['id'];
@@ -91,7 +91,7 @@ class EppContact extends EppAbstract
             $this->setError("Operation not allowed, set a handle id!");
             return -2;
         }
-        // set the xmlQuery 
+        // set the xmlQuery
         $this->xmlQuery = EppDomXML::Check(vars: ['contact' => $contact, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server
         if ($this->ExecuteQuery(clTRType: "check-contact", clTRObject: $contact, storage: true)) {
@@ -108,7 +108,7 @@ class EppContact extends EppAbstract
      * @access public
      * @return boolean status
      */
-    public function create()
+    public function Create()
     {
         $this->xmlQuery = EppDomXML::Create(vars: ['contact' => $this->contactVars, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server and return answer (no handling of special return values)
@@ -126,7 +126,7 @@ class EppContact extends EppAbstract
      * @param boolean execute internal sanity checks
      * @return boolean status
      */
-    public function update()
+    public function Update()
     {
         if (empty($this->contactVars['id'])) {
             $this->setError("Operation not allowed, fetch a handle id first!");
@@ -148,7 +148,7 @@ class EppContact extends EppAbstract
      * @set $contcatVars
      * @return TRUE or FALSE
      */
-    public function fetch(?string $contact = null)
+    public function Fetch(?string $contact = null)
     {
         if (is_null($contact)) {
             $contact = $this->contactVars['id'];
@@ -174,7 +174,7 @@ class EppContact extends EppAbstract
      * @access public
      * @return boolean status
      */
-    public function delete(?string $contact = null)
+    public function Delete(?string $contact = null)
     {
         if ($contact === null) {
             $contact = $this->contactVars['id'];
@@ -200,7 +200,7 @@ class EppContact extends EppAbstract
      * @param string add, rem (optional, defaults to add)
      * @return boolean status
      */
-    public function updateStatus(?string $state, ?string $adddel = "add")
+    public function UpdateStatus(?string $state, ?string $adddel = "add")
     {
         if ($this->id == "") {
             $this->setError("Operation not allowed, fetch a handle id first!");

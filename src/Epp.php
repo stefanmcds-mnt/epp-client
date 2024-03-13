@@ -4,21 +4,21 @@
  * EppClient class.
  *
  * This class initialize all/single object to operate with Epp Server
- * 
- * The constructor search in exist 
- * 
+ *
+ * The constructor search in exist
+ *
  * Epp commands are distinguished into three categories
  * - session command (hello,login,logout)
  * - create/update command on contact and domain object
  * - server command that interacts without any update action on contact and domain object such as check,info,poll
- *   
+ *
  * So that above command are stored into this Class
  * - EppSession all command session and server not for Contact and domain object
- * - EppContact all command for Contact object 
+ * - EppContact all command for Contact object
  * - EppDomain all command for Domain Object
- * 
+ *
  * EppConnection are the connection to Epp Server and use Curl or Sock protocol
- * 
+ *
  *
  * @category EPPClient
  * @package Epp
@@ -33,10 +33,13 @@ use EppClient\EppConnection;
 use EppClient\EppSession;
 use EppClient\EppContact;
 use EppClient\EppDomain;
+use EppClient\EppException;
+use EppClient\Traits\EppDomXML;
 
 class Epp
 {
 
+    // Log
     static public ?array $LogDebug = [
         'LOG_EMERG' => 0, /* system is unusable */
         'LOG_ALERT' => 1, /* action must be taken immediately */
@@ -56,8 +59,6 @@ class Epp
         7 => 'LOG_DEBUG', //default level for logMessage() method
     ];
 
-    //protected mixed $client;
-
     /**
      * Class Constructor
      *
@@ -74,9 +75,10 @@ class Epp
      *  'debugfile'=>'',       // the debugfile can be null
      *  'certificatefile'=>'', // the certificate file of epp server can be null
      *  'interface'=>''        // the interface can be null
+     *  'protocol'=>''         // the type of connection to epp server curl|sock
      *  'secdns'=>true/false   // if the registrar use secDNS
      * ]
-     * 
+     *
      * @param mixed|null $config
      */
     public function __construct(

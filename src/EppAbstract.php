@@ -75,7 +75,7 @@ abstract class EppAbstract
     public ?array $command = ['hello', 'check', 'info', 'create', 'update', 'transfer', 'fetch'];
 
     /**
-     * Global Var where are stored element for 
+     * Global Var where are stored element for
      * populate database
      *
      * @var array|null
@@ -196,9 +196,9 @@ abstract class EppAbstract
 
     /**
      * Parse $this->xmlQuery result
-     * 
+     *
      * XML2Array class transform DOMXML Object into an array
-     * 
+     *
      * The result is parsed and return an array for purpose
      * into EppContact EppDomain and EppSession class
      *
@@ -214,7 +214,7 @@ abstract class EppAbstract
     /**
      * initialize ClassVars values
      *
-     * @param array|object|null $fields 
+     * @param array|object|null $fields
      */
     public function initValues()
     {
@@ -234,7 +234,7 @@ abstract class EppAbstract
      * @access public
      * @param string $var variable name
      * @param mixed $val value to be set
-     * 
+     *
      * @return mixed value set or false if variable name does not exist
      */
     public function set(?string $var, mixed $val)
@@ -410,8 +410,9 @@ abstract class EppAbstract
             }
             // store request to array $tostore for purpose as database support
             if ($this->tostore) {
+                // store request
                 $this->storage[] = [
-                    'table' => 'EppRequests', // Model Class
+                    'table' => 'requests', // Model Class
                     'action' => 'create',
                     'data' => [
                         'clTRID' => $this->connection->_clTRID(),
@@ -423,7 +424,7 @@ abstract class EppAbstract
                 ];
                 // store response
                 $this->storage[] = [
-                    'table' => 'EppResponses', // Model Class
+                    'table' => 'responses', // Model Class
                     'action' => 'create',
                     'data' => [
                         'clTRID' => $this->connection->_clTRID(),

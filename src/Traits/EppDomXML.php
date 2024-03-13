@@ -4,22 +4,22 @@
  * Create the xml request fo NIC
  *
  * Use class Arra2XML to transform and array into XML structure
- * 
+ *
  * $vars must be an multilevel array of epp command
- * 
+ *
  * Every XML request to Epp server contains
  * - intital standard element
  *   - <?xml version="" encoding="UTF-8" standalone="no">
  *   - <epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
  * - an element can be:
- *   - <hello> 
+ *   - <hello>
  *   - <command>
  *     - one or more operation element
  *     - <extension> optionally element
  *     - <clTRID> element
  * - final standard element
  *   - </epp>
- * 
+ *
  * @package EPPClient
  * @author STEF@N MCDS S.a.s. <info@stefan-mcds.it>
  * @license http://opensource.org/licenses/bsd-license.php New BSD License
@@ -338,7 +338,7 @@ trait EppDomXML
                                 'xmlns:contact' => 'urn:ietf:params:xml:ns:contact-1.0',
                                 'xsi:schemaLocation' => 'urn:ietf:params:xml:ns:contact-1.0 contact-1.0.xsd',
                             ],
-                        'contact:id' => $vars['contact']['handle'],
+                        'contact:id' => $vars['contact']['id'],
                         'contact:postalInfo' => [
                             '@attributes' => [
                                 'type' => "loc",
