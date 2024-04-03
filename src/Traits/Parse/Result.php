@@ -2,7 +2,7 @@
 
 namespace EppClient\Traits\Parse;
 
-trait resultTrait
+trait Result
 {
 
     /**

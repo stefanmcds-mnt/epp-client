@@ -15,12 +15,12 @@ namespace EppClient;
 use EppClient\EppException;
 use EppClient\Traits\EppDomXML;
 use EppClient\Traits\EppTree;
-use EppClient\Traits\Parse\ResponseTrait;
+use EppClient\Traits\Parse\Response;
 use Utilita\XML2Array;
 
 abstract class EppAbstract
 {
-    use EppDomXML, ResponseTrait, EppTree;
+    use EppDomXML, Response, EppTree;
 
     /**
      * Log Level

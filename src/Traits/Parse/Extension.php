@@ -4,7 +4,7 @@ namespace EppClient\Traits\Parse;
 
 use EppClient\Traits\EppTree;
 
-trait extensionTrait
+trait Extension
 {
     use EppTree;
 

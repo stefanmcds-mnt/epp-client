@@ -19,7 +19,7 @@
 
 namespace EppClient\Traits\Parse;
 
-trait commandTrait
+trait Command
 {
 
     /**
