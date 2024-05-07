@@ -448,12 +448,15 @@ trait EppDomXML
                 'clTRID' => $vars['clTRID']
             ],
         ];
-        $finalElement['command']['create']['domain:create']['domain:contact'] = [
-            '@attribute' => [
-                'type' => 'tech',
-            ],
-            $vars['domain']['tech'],
-        ];
+        foreach ($vars['domain']['tech'] as $item) {
+            $finalElement['command']['create']['domain:create']['domain:contact'] = [
+                '@attribute' => [
+                    'type' => 'tech',
+                ],
+                //$vars['domain']['tech'],
+                $item,
+            ];
+        }
         foreach ($vars['domain']['ns'] as $ns) {
             if (!empty($ns['hostAddr']) && !empty($ns['ip'])) {
                 $arraydns[] = [

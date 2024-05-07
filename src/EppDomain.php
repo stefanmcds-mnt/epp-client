@@ -36,7 +36,7 @@ use EppClient\EppConnection;
 use EppClient\Traits\EppDomXML;
 use Algo26\IdnaConvert\ToIdn;
 
-class EppDomain extends EppAbstract
+final class EppDomain extends EppAbstract
 {
     private ?string $admininitial;
     private mixed $techinitial;
@@ -243,6 +243,12 @@ class EppDomain extends EppAbstract
                     // query server
                     if ($this->ExecuteQuery(clTRType: "update-domain", clTRObject: $this->domainVars['name'], storage: true)) {
                         $this->techinitial = $old['contact']['tech'];
+                        $APT = true;
+                    }
+                    break;
+                default:
+                    // query server
+                    if ($this->ExecuteQuery(clTRType: "update-domain", clTRObject: $this->domainVars['name'], storage: true)) {
                         $APT = true;
                     }
                     break;

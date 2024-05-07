@@ -23,7 +23,9 @@ try {
     $session->Login();
     //$session->Poll();
     //$domain->Check('stedns.it');
-    $domain->domainVars = array_merge($domain->domainVars, ['name' => 'stedns.it', 'authInfo' => "STE20100201-REG-001"]);
+    //$domain->domainVars = array_merge($domain->domainVars, ['name' => 'stedns.it', 'authInfo' => "STE20100201-REG-001"]);
+    $domain->set('name','stedns.it');
+    $domain->set('authInfo',"STE20100201-REG-001");
     $domain->Fetch();
     $session->Logout();
     //print_r($session->xmlResponse['body']);

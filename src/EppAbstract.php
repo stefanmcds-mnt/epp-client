@@ -16,11 +16,13 @@ use EppClient\EppException;
 use EppClient\Traits\EppDomXML;
 use EppClient\Traits\EppTree;
 use EppClient\Traits\Parse\Response;
-use Utilita\XML2Array;
 
 abstract class EppAbstract
 {
-    use EppDomXML, Response, EppTree;
+    // Traits to use
+    use EppDomXML;
+    use Response;
+    use EppTree;
 
     /**
      * Log Level
@@ -127,7 +129,6 @@ abstract class EppAbstract
      * @var bool|null
      */
     public ?bool $dnssec = false;
-
 
     /**
      * Constructor

@@ -27,7 +27,7 @@ use EppClient\EppAbstract;
 use EppClient\EppConnection;
 use EppClient\Traits\EppDomXML;
 
-class EppContact extends EppAbstract
+final class EppContact extends EppAbstract
 {
     // array for use to XML structure to epp server
     public ?array $contactVars = [
@@ -57,18 +57,15 @@ class EppContact extends EppAbstract
         'status'
     ];
 
-    // max check contacts
-    private $max_check;
-    private $id;
-
-
     /**
      * Class constructor
      *
      */
     public function __construct(
         protected ?EppConnection $connection,
-        protected ?bool $tostore = true
+        protected ?bool $tostore = true,
+        private ?string $id = null,
+        private ?int $max_check = null
     ) {
         parent::__construct(connection: $this->connection, tostore: $this->tostore);
         $this->initValues();

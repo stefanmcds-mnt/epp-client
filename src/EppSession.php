@@ -14,8 +14,8 @@
  * - showCredit
  *
  * by setting $dnssec to true the script will use dnssec validation on the glue records.
- * 
- * 
+ *
+ *
  * @category EppClient
  * @package EppSession
  * @author STEF@N MCDS S.a.s. <info@stefan-mcds.it>
@@ -30,7 +30,7 @@ use EppClient\EppConnection;
 use EppClient\EppException;
 use EppClient\Traits\EppDomXML;
 
-class EppSession extends EppAbstract
+final class EppSession extends EppAbstract
 {
 
     // array for use to XML structure to epp server
@@ -67,11 +67,11 @@ class EppSession extends EppAbstract
 
     /**
      * Set Registry
-     * 
+     *
      * set the Registry object
-     * 
+     *
      * return an array such us
-     * 
+     *
      *  [
      *      'svID' => NIC-IT EPP Registry,
      *      'scDate' => 2013-02-22,
@@ -118,7 +118,7 @@ class EppSession extends EppAbstract
      *          'xsi:schemaLocation' => urn:ietf:params:xml:ns:rgp-1.0 rgp-1.0.xsd
      *      ]
      * ]
-     * 
+     *
      * @param array|null $registry
      * @return mixed
      */
@@ -159,7 +159,7 @@ class EppSession extends EppAbstract
 
     /**
      * session start
-     * 
+     *
      * @access public
      * @return boolean status
      */
@@ -324,7 +324,7 @@ class EppSession extends EppAbstract
                     if ((strtolower($type) === "req") && ($store === true)) {
                         $tmp = $this->parsePollReq();
                         $this->storage[] = [
-                            'table' => 'epp_messages',
+                            'table' => 'messages',
                             'data' => [
                                 'idmsg' => $this->sessionVars['msgID'],
                                 'title' => $this->sessionVars['msgTitle'],
@@ -344,7 +344,7 @@ class EppSession extends EppAbstract
                             'action' => 'create'
                         ];
                         $this->storage[] = [
-                            'table' => 'epp_msgqueues',
+                            'table' => 'msgqueues',
                             'data' => [
                                 'clTRID' => $this->connection->_clTRID(),
                                 'svTRID' => $this->svTRID,
