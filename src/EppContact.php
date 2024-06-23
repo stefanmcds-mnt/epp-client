@@ -31,30 +31,31 @@ final class EppContact extends EppAbstract
 {
     // array for use to XML structure to epp server
     public ?array $contactVars = [
-        'id',
-        'name',
-        'org',
-        'street',
-        'street2',
-        'street3',
-        'city',
-        'province',
-        'postalCode',
-        'countryCode',
-        'voice',
-        'fax',
-        'email',
-        'clID',
-        'crID',
-        'crDate',
-        'upID',
-        'upDate',
-        'authinfo',
-        'consentForPublishing',
-        'nationalityCode',
-        'entityType',
-        'regCode',
-        'status'
+        'id' => null,
+        'name' => null,
+        'org' => null,
+        'street' => null,
+        'street2' => null,
+        'street3' => null,
+        'city' => null,
+        'province' => null,
+        'postalCode' => null,
+        'countryCode' => null,
+        'voice' => null,
+        'fax' => null,
+        'email' => null,
+        'authInfo' => null,
+        'consentForPublishing' => null,
+        'nationalityCode' => null,
+        'entityType' => null,
+        'regCode' => null,
+        'schoolCode' => null,
+        'status' => null,
+        'clID' => null,
+        'crID' => null,
+        'crDate' => null,
+        'upID' => null,
+        'upDate' => null,
     ];
 
     /**
@@ -147,7 +148,7 @@ final class EppContact extends EppAbstract
      */
     public function Fetch(?string $contact = null)
     {
-        if (is_null($contact)) {
+        if (null === $contact) {
             $contact = $this->contactVars['id'];
         }
         if (empty($contact)) {
@@ -156,7 +157,7 @@ final class EppContact extends EppAbstract
         }
         $this->xmlQuery = EppDomXML::Info(vars: ['contact' => $contact, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // re-initialize object data
-        $this->initValues($this->contactVars);
+        $this->initValues();
         // query server
         if ($this->ExecuteQuery(clTRType: "info-contact", clTRObject: $contact, storage: true)) {
             return $this->contactVars = array_merge($this->contactVars, $this->xmlResult);

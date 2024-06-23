@@ -212,16 +212,25 @@ abstract class EppAbstract
         return $this->_Tree($this->_ParseResponseBody(xml: $xml, element: $element));
     }
 
+
+    /**
+     * GetClassName
+     */
+    private function GetClassName(mixed $classname, ?bool $sanifica = false): string
+    {
+        $path = explode('\\', get_class($classname));
+        if (true === $sanifica) {
+            return str_replace(['epp', 'Epp', 'EPP', 'class', 'Class', 'CLASS'], '', array_pop($path));
+        }
+        return array_pop($path);
+    }
+
     /**
      * initialize ClassVars values
-     *
-     * @param array|object|null $fields
      */
     public function initValues()
     {
-        $class = explode('\\', get_class($this));
-        $class = strtolower(str_replace(['EPP', 'CLASS'], '', strtoupper(end($class))));
-        $classVars = $class . 'Vars';
+        $classVars = strtolower($this->GetClassName(classname: $this, sanifica: true)) . 'Vars';
         if (isset($this->$classVars) && is_array($this->$classVars)) {
             foreach ($this->$classVars as $key => $value) {
                 $this->$classVars[$key] = null;
@@ -240,9 +249,7 @@ abstract class EppAbstract
      */
     public function set(?string $var, mixed $val)
     {
-        $class = explode('\\', get_class($this));
-        $class = strtolower(str_replace(['EPP', 'CLASS', 'epp', 'class'], '', strtoupper(end($class))));
-        $classVars = $class . 'Vars';
+        $classVars = strtolower($this->GetClassName(classname: $this, sanifica: true)) . 'Vars';
         // in version 5.2.3 the 4th parameter "double_encode" was added
         if (null !== $val) {
             if (PHP_VERSION_ID < 50203) {
@@ -258,7 +265,7 @@ abstract class EppAbstract
         } else {
             $this->$classVars[$var] = $val;
         }
-        print_r($this->$classVars[$var]);
+        //print_r($this->$classVars[$var]);
     }
 
     /**
@@ -282,7 +289,7 @@ abstract class EppAbstract
      * @access public
      * @return string[16] random authinfo code
      */
-    public function authinfo(?int $length = 16)
+    public function authInfo(?int $length = 16)
     {
         $str = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890';
         $authinfo = '';

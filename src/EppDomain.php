@@ -50,15 +50,17 @@ final class EppDomain extends EppAbstract
         'registrant' => null,
         'contact' => null,
         'authInfo' => null,
+        'clID' => null,
+        'crID' => null,
         'crDate' => null,
         'exDate' => null,
         'status' => null,
-        'ceID' => null,
-        'oldauthinfo' => null,
+        'oldauthInfo' => null,
         'infContacts' => null,
         'upID' => null,
         'upDate' => null,
-        'trnData' => null,
+        'trDate' => null,
+        'trnData' => null
     ];
 
     // use just in case of an updateRegistrant + change of agent

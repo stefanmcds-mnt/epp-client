@@ -2,7 +2,7 @@
 
 /**
  * Parse the XML Response from Epp server
- * 
+ *
  * Every response contains:
  * - intital standard element
  *   - <?xml version="" encoding="UTF-8">
@@ -14,18 +14,18 @@
  *          xmlns:rgp="urn:ietf:params:xml:ns:rgp-1.0"
  *          xmlns="urn:ietf:params:xml:ns:epp-1.0" >
  * - one or more elements
- *   - <greeteg> only on hello 
+ *   - <greeteg> only on hello
  *   - <result>  on command
  *   - <msgQ>    only on command Poll
  *   - <resData> data elements related command
  *   - <extension> extension elements related command
- *   - <trID> transcation identifer 
+ *   - <trID> transcation identifer
  * - final standard element
  *   - </epp>
- * 
- * 
- * 
- * 
+ *
+ *
+ *
+ *
  * @package EPPClient
  * @author STEF@N MCDS S.a.s. <info@stefan-mcds.it>
  * @license http://opensource.org/licenses/bsd-license.php New BSD License
@@ -46,9 +46,9 @@ trait Response
 
     /**
      * Parse $this->xmlQuery result
-     * 
+     *
      * XML2Array class transform DOMXML Object into an array
-     * 
+     *
      * The result is parsed and return an array for purpose
      * into EppContact EppDomain and EppSession class
      *
@@ -61,8 +61,9 @@ trait Response
             $ext = 'extdom';
         } else {
             // get element by called class
-            $element = explode('\\', get_class($this));
-            $element = str_replace('epp', '', strtolower(end($element)));
+            //$element = explode('\\', get_class($this));
+            //$element = str_replace('epp', '', strtolower(end($element)));
+            $element = str_replace(['epp', 'Epp', 'EPP'], '', strtolower($this->GetClassName($this)));
             //$this->class = get_class($this) . ' ' . $element;
             if ($element === 'domain') {
                 $ext = 'extdom';
@@ -207,7 +208,7 @@ trait Response
                         if (isset($res['extension'][$e . ':dnsErrorMsgData'])) {
                             $res['dnsErrorMsgData'] = Extension::_dnsErrorMsgData(parse: $res['extension'][$e . ':dnsErrorMsgData'], ext: $e);
                         }
-                        // chgStatusMsgData 
+                        // chgStatusMsgData
                         if (isset($res['extension'][$e . ':chgStatusMsgData'])) {
                             $res[$element . ':chgStatusMsgData'] = Extension::_chgStatusMsgData(parse: $res['extension'][$e . ':chgStatusMsgData'], ext: $e);
                             unset($res['extension'][$e . ':chgStatusMsgData']);
