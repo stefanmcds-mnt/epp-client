@@ -139,8 +139,7 @@ abstract class EppAbstract
     public function __construct(
         protected ?EppConnection $connection,
         protected ?bool $tostore = true
-    ) {
-    }
+    ) {}
 
     /**
      * Magic __get
@@ -404,7 +403,7 @@ abstract class EppAbstract
                     }
                     // look for an extended server error message and code
                     if (isset($this->xmlResult['result']['wrongValue'])) {
-                        $this->wrongValue = implode(' ', array_values($this->xmlResult['result']['wrongValue']));
+                        $this->wrongValue = (isset($this->xmlResult['result']['wrongValue'])) ? implode(' ', array_values($this->xmlResult['result']['wrongValue'])) : null;
                     }
                 } else {
                     $this->setError("Unexpected result (no xml response body).");

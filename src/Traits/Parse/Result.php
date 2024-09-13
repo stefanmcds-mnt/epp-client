@@ -7,7 +7,7 @@ trait Result
 
     /**
      * Parse <result> element
-     * 
+     *
      * The <result> Element structure
      * <result>
      *     <code> // one
@@ -23,11 +23,11 @@ trait Result
      *         <value> // one
      *         <reason> // one
      *     </extvalue>
-     *    
+     *
      * </result>
-     * 
+     *
      * If the command has been succesfully there is only one <result> element
-     * Otherwhise can be more than one <result> elements 
+     * Otherwhise can be more than one <result> elements
      *
      * @param array|null $parse
      * @param string|null $element
@@ -57,8 +57,8 @@ trait Result
             if (count($parse['extValue']) > 1) {
                 foreach ($parse['extValue'] as $value) {
                     $res['wrongValue'][] = [
-                        'code' => $value['value']['extepp:reasonCode'],
-                        'reason' => $value['reason']['@value']
+                        'code' => (isset($value['value'])) ? $value['value']['extepp:reasonCode'] : null,
+                        'reason' => (isset($value['reason'])) ? $value['reason']['@value'] : null
                     ];
                 }
             } else {
