@@ -211,7 +211,6 @@ abstract class EppAbstract
         return $this->_Tree($this->_ParseResponseBody(xml: $xml, element: $element));
     }
 
-
     /**
      * GetClassName
      */
@@ -259,10 +258,10 @@ abstract class EppAbstract
         }
         if (isset($this->$classVars[$var])) {
             if ($this->$classVars[$var] !== $val) {
-                $this->$classVars[$var] = $val;
+                return $this->$classVars[$var] = $val;
             }
         } else {
-            $this->$classVars[$var] = $val;
+            return $this->$classVars[$var] = $val;
         }
         //print_r($this->$classVars[$var]);
     }

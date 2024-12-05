@@ -86,21 +86,21 @@ final class EppDomain extends EppAbstract
     /**
      * check domain
      *
-     * @param    mixed $domain  optional domain to check (set domain!)
+     * @param    mixed $element  optional domain to check (set domain!)
      * @return   mixed|boolean   array([name] => esempio1.it, [avail] => false, [reason] => Domain is registered) or boolean -1 error
      */
-    public function Check(mixed $domain = null)
+    public function Check(mixed $element = null)
     {
-        if ($domain === null) {
-            $domain = $this->domainVars['name'];
-        } else if ($domain === "") {
+        if ($element === null) {
+            $element = $this->domainVars['name'];
+        } else if ($element === "") {
             $this->setError("Operation not allowed, set a domain name first!");
             return -2;
         }
         // fetch xml template
-        $this->xmlQuery = EppDomXML::_Check(vars: ['domain' => $domain, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
+        $this->xmlQuery = EppDomXML::_Check(vars: ['domain' => $element, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server
-        if ($this->ExecuteQuery(clTRType: "check-domain", clTRObject: $domain, storage: true)) {
+        if ($this->ExecuteQuery(clTRType: "check-domain", clTRObject: $element, storage: true)) {
             return $this->domainVars = array_merge($this->domainVars, $this->xmlResult);
         } else {
             // distinguish between errors and boolean states...
@@ -138,20 +138,20 @@ final class EppDomain extends EppAbstract
      * @param    string
      * @return   boolean status
      */
-    public function Fetch(?string $domain = null, ?string $authinfo = null, ?string $infContacts = 'all')
+    public function Fetch(?string $element = null, ?string $authinfo = null, ?string $infContacts = 'all')
     {
         $infContacts = strtolower($infContacts);
         if (!in_array($infContacts, ["all", "registrant", "admin", "tech"])) {
             $infContacts = 'all';
         }
         // if domain and authinfo was not given as an argument, but has been set
-        $domain = [
-            'name' => ($domain === null) ? $this->domainVars['name'] : $domain,
+        $element = [
+            'name' => ($element === null) ? $this->domainVars['name'] : $element,
             'authInfo' => ($authinfo === null) ? $this->domainVars['authInfo'] : $authinfo,
         ];
-        $this->xmlQuery = EppDomXML::_Info(vars: ['domain' => $domain, 'infContacts' => $infContacts, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
+        $this->xmlQuery = EppDomXML::_Info(vars: ['domain' => $element, 'infContacts' => $infContacts, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server
-        if ($this->ExecuteQuery(clTRType: "info-domain", clTRObject: $domain, storage: true)) {
+        if ($this->ExecuteQuery(clTRType: "info-domain", clTRObject: $element, storage: true)) {
             // reset changes at the bottom
             $this->domainVars = array_merge($this->domainVars, $this->xmlResult);
             $this->nsinitial = $this->domainVars['ns'];
@@ -185,18 +185,18 @@ final class EppDomain extends EppAbstract
      * @param    string  domain name to delete
      * @return   boolean status
      */
-    public function Delete($domain = null)
+    public function Delete(?string $element = null)
     {
-        if ($domain === null)
-            $domain = $this->domainVars['name'];
-        if ($domain == "") {
+        if ($element === null)
+            $element = $this->domainVars['name'];
+        if ($element == "") {
             $this->setError("Operation not allowed, set a domain name!");
             return false;
         }
         // fetch xml template
-        $this->xmlQuery = EppDomXML::_Delete(vars: ['domain' => $domain, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
+        $this->xmlQuery = EppDomXML::_Delete(vars: ['domain' => $element, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server
-        if ($this->ExecuteQuery(clTRType: "delete-domain", clTRObject: $domain, storage: true)) {
+        if ($this->ExecuteQuery(clTRType: "delete-domain", clTRObject: $element, storage: true)) {
             return $this->domainVars = array_merge($this->domainVars, $this->xmlResult);
         } else {
             return false;
@@ -263,14 +263,14 @@ final class EppDomain extends EppAbstract
      * update domain status
      *
      * @access   public
-     * @param    string  $domain
+     * @param    string  domain
      * @param    string  clientDeleteProhibited, clientUpdateProhibited, clientTransferProhibited, clientHold, clientLock
      * @param    string  add, rem (optional, defaults to add)
      * @return   boolean status
      */
-    public function updateStatus(?string $domain, ?string $state, ?string $adddel = "add")
+    public function updateStatus(?string $element, ?string $state, ?string $adddel = "add")
     {
-        if ($domain == "") {
+        if ($element == "") {
             $this->setError("Operation not allowed, fetch a domain first!");
             return false;
         }
@@ -303,7 +303,7 @@ final class EppDomain extends EppAbstract
         $this->xmlQuery = '';
 
         // query server
-        return $this->ExecuteQuery(clTRType: "update-domain-status", clTRObject: $domain, storage: true);
+        return $this->ExecuteQuery(clTRType: "update-domain-status", clTRObject: $element, storage: true);
     }
 
     /**
@@ -313,17 +313,17 @@ final class EppDomain extends EppAbstract
      * @param    string  domain name to restore
      * @return   boolean status
      */
-    public function Restore(?string $domain = null)
+    public function Restore(?string $element = null)
     {
-        if ($domain === null)
-            $domain = $this->domainVars['name'];
-        if ($domain == "") {
+        if ($element === null)
+            $element = $this->domainVars['name'];
+        if ($element == "") {
             $this->setError("Operation not allowed, set a domain name first!");
             return false;
         }
-        $this->xmlQuery = EppDomXML::_Restore(vars: ['domain' => $domain, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
+        $this->xmlQuery = EppDomXML::_Restore(vars: ['domain' => $element, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server
-        if ($this->ExecuteQuery(clTRType: "update-domain-restore", clTRObject: $domain, storage: true)) {
+        if ($this->ExecuteQuery(clTRType: "update-domain-restore", clTRObject: $element, storage: true)) {
             $this->domainVars = array_merge($this->domainVars, $this->xmlResult);
         }
     }
@@ -336,11 +336,11 @@ final class EppDomain extends EppAbstract
      * @param    string  operation transfer type
      * @return   boolean status
      */
-    public function Transfer(?array $domain, ?string $operation = NULL)
+    public function Transfer(?array $element, ?string $operation = NULL)
     {
-        if ($domain === null)
-            $domain = $this->domainVars;
-        if ($domain == "") {
+        if ($element === null)
+            $element = $this->domainVars;
+        if ($element == "") {
             $this->setError("Operation not allowed, set a domain name first!");
             return false;
         }
@@ -348,9 +348,9 @@ final class EppDomain extends EppAbstract
             $this->setError("Operation not allowed");
             return false;
         }
-        $this->xmlQuery = EppDomXML::Tranfer(vars: ['domain' => $domain, 'clTRID' => $this->connection->_clTRID(action: 'set')], motive: $operation);
+        $this->xmlQuery = EppDomXML::Tranfer(vars: ['domain' => $element, 'clTRID' => $this->connection->_clTRID(action: 'set')], motive: $operation);
         // query server
-        if ($this->ExecuteQuery(clTRType: "transfer-domain-" . $operation, clTRObject: $domain, storage: true)) {
+        if ($this->ExecuteQuery(clTRType: "transfer-domain-" . $operation, clTRObject: $element, storage: true)) {
             $this->domainVars = array_merge($this->domainVars, $this->xmlResult);
         }
     }

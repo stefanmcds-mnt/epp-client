@@ -75,14 +75,14 @@ final class EppContact extends EppAbstract
     /**
      * check contact
      *
-     * $contact can be null if isset $contactVars['id']
+     * $element can be null if isset $contactVars['id']
      *
      * @param mixed optional contact to check (set handle id!)
      * @return array|boolean (array epp response or boolean -1 on error)
      */
-    public function Check(mixed $contact = null)
+    public function Check(mixed $element = null)
     {
-        if (is_null($contact)) {
+        if (is_null($element)) {
             $contact = $this->contactVars['id'];
         }
         if (empty($contact)) {
@@ -146,20 +146,20 @@ final class EppContact extends EppAbstract
      * @set $contcatVars
      * @return TRUE or FALSE
      */
-    public function Fetch(?string $contact = null)
+    public function Fetch(?string $element = null)
     {
-        if (null === $contact) {
-            $contact = $this->contactVars['id'];
+        if (null === $element) {
+            $element = $this->contactVars['id'];
         }
-        if (empty($contact)) {
+        if (empty($element)) {
             $this->setError("Operation not allowed, set a handle id!");
             return FALSE;
         }
-        $this->xmlQuery = EppDomXML::Info(vars: ['contact' => $contact, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
+        $this->xmlQuery = EppDomXML::Info(vars: ['contact' => $element, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // re-initialize object data
         $this->initValues();
         // query server
-        if ($this->ExecuteQuery(clTRType: "info-contact", clTRObject: $contact, storage: true)) {
+        if ($this->ExecuteQuery(clTRType: "info-contact", clTRObject: $element, storage: true)) {
             return $this->contactVars = array_merge($this->contactVars, $this->xmlResult);
         } else {
             return FALSE;
@@ -172,18 +172,18 @@ final class EppContact extends EppAbstract
      * @access public
      * @return boolean status
      */
-    public function Delete(?string $contact = null)
+    public function Delete(?string $element = null)
     {
-        if ($contact === null) {
-            $contact = $this->contactVars['id'];
+        if ($element === null) {
+            $element = $this->contactVars['id'];
         }
-        if ($contact == "") {
+        if ($element == "") {
             $this->setError("Operation not allowed, set a handle!");
             return FALSE;
         }
-        $this->xmlQuery = EppDomXML::Delete(vars: ['contact' => $contact, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
+        $this->xmlQuery = EppDomXML::Delete(vars: ['contact' => $element, 'clTRID' => $this->connection->_clTRID(action: 'set')]);
         // query server
-        if ($this->ExecuteQuery(clTRType: "delete-contact", clTRObject: $contact, storage: true)) {
+        if ($this->ExecuteQuery(clTRType: "delete-contact", clTRObject: $element, storage: true)) {
             return $this->contactVars = array_merge($this->contactVars, $this->xmlResult);
         } else {
             return FALSE;
