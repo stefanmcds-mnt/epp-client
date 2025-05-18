@@ -51,7 +51,7 @@ class EppConnection
      *  'username',        // username connect to server es registrar
      *  'password',        // password
      *  'clTRIDprefix',    // the clTRID prefix registrar sigle
-     *  'handleprefix',    // the handle/id prefix for create contact id
+     *  'ContactPrefix',   // the handle/id prefix for create contact id
      *  'timezone',        // the timezone of epp server
      *  'lang',            // the language used by epp server can be null default en
      *  'debugfile',       // the debugfile can be null
@@ -65,7 +65,7 @@ class EppConnection
      *  @param string|null $username        epp username
      *  @param string|null $password        epp password
      *  @param string|null $clTRIDprefix    the clTRID prefix registrar sigle
-     *  @param string|null $handleprefix    the handle/id prefix used for create contact id
+     *  @param string|null $ContactPrefix   the handle/id prefix used for create contact id
      *  @param string|null $timezone        epp server timezone
      *  @param string|null $lang,           epp server language can be null default en
      *  @param string|null $debugfile,      the debugfile can be null
