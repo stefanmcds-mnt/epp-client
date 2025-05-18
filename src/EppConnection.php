@@ -26,7 +26,6 @@ class EppConnection
     private mixed $response = null;
     private ?string $clTRID = null;
 
-
     /**
      * Procotcol communication with Epp Server
      *
@@ -83,7 +82,7 @@ class EppConnection
         public ?string $username        = null,
         public ?string $password        = null,
         public ?string $clTRIDprefix    = null,
-        public ?string $handleprefix    = null,
+        public ?string $ContactPrefix   = null,
         public ?string $timezone        = null,
         public ?string $lang            = null,
         public ?string $debugfile       = null,
@@ -107,7 +106,7 @@ class EppConnection
             throw new EppException(message: 'The Connection Protocol is not defined (curl or sock).');
         } else if ($this->clTRIDprefix === null) {
             $this->setPrefix('clTRID');
-        } else if ($this->handleprefix === null) {
+        } else if ($this->ContactPrefix === null) {
             $this->setPrefix('handle');
         }
         if (true === $status) {
