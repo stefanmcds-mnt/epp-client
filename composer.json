@@ -2,7 +2,7 @@
     "name": "stefanmcds-mnt/epp-client",
     "type": "package",
     "description": "Epp Client",
-    "version": "latest",
+    "version": "1.2",
     "license": "MIT",
     "authors": [
         {
